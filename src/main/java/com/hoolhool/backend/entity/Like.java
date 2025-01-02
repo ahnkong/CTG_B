@@ -1,0 +1,34 @@
+package com.hoolhool.backend.entity;
+
+import java.time.LocalDateTime;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name = "like")
+public class Like {
+    @Id
+    @Column(name = "like_id", nullable = false)
+    private Long likeId;
+
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
+    @Column(name = "type", nullable = false, columnDefinition = "ENUM('BOARD', 'COMMENT', 'RECOMMENT')")
+    private String type;
+
+    @Column(name = "target_id", nullable = false)
+    private String targetId;
+
+    @Column(name = "like_date", nullable = false)
+    private LocalDateTime likeDate;
+
+    @Column(name = "board_id")
+    private Long boardId;
+
+    @Column(name = "comment_id")
+    private Long commentId;
+
+    @Column(name = "recomment_id")
+    private Long recommentId;
+}
