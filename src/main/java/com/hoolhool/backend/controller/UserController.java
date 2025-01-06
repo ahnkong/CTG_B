@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,7 @@ import com.hoolhool.backend.service.UserService;
 
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
 @CrossOrigin(origins = { "http://localhost:3000", "http://192.168.0.7:3000" })
 public class UserController {
     
@@ -44,7 +45,7 @@ public class UserController {
     }
 
     // 프로필 사진 업로드
-    @PostMapping("/{id}/uploadProfilePicture")
+    @PostMapping("/{id}/uploadProfileImage")
     public ResponseEntity<Map<String, String>> uploadProfilePicture(
             @PathVariable String id,
             @RequestParam("file") MultipartFile file) {
@@ -53,6 +54,17 @@ public class UserController {
             return ResponseEntity.ok(Map.of("profileImageUrl", profileImageUrl));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "파일 저장 실패"));
+        }
+    }
+
+    // 프로필 사진 삭제
+    @DeleteMapping("/{userId}/deleteProfileImage")
+    public ResponseEntity<String> deleteProfileImage(@PathVariable String userId) {
+        try {
+            userService.deleteProfilePicture(userId);
+            return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 

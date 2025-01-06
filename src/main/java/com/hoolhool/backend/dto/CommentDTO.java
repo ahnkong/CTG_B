@@ -1,6 +1,7 @@
 package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class CommentDTO {
     private LocalDateTime coCDate;
     private Integer coLikes;
     private Long reCommentId;
+    private List<ReCommentDTO> reComments; // 대댓글 리스트 추가
 
     
     public Long getCommentId() {
@@ -58,6 +60,12 @@ public class CommentDTO {
     }
     public void setReCommentId(Long reCommentId) {
         this.reCommentId = reCommentId;
+    }
+    public List<ReCommentDTO> getReComments() {
+        return reComments;
+    }
+    public void setReComments(List<ReCommentDTO> reComments) {
+        this.reComments = reComments;
     }
 
     

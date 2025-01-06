@@ -4,10 +4,20 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
-@Table(name = "like")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "likes")
 public class Like {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id", nullable = false)
     private Long likeId;
 

@@ -83,4 +83,9 @@ public class ImageService {
 
         return imageDTOs;
     }
+
+    // 게시글에 연결된 모든 이미지 삭제
+    public void deleteImagesByBoardId(Long boardId) {
+        imageRepository.deleteByBoardId(boardId);
+    }
 }

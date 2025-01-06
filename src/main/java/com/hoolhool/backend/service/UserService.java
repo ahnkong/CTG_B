@@ -36,7 +36,8 @@ public class UserService {
     private UserRepository userRepository;
 
     private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    //private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성
     private Key getSigningKey() {
@@ -174,21 +175,56 @@ public class UserService {
 
     // 프로필 사진 저장
     public String saveProfilePicture(String userId, MultipartFile file) throws IOException {
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    
+        // 기존 이미지 삭제
+        deleteExistingProfileImage(user);
+    
+        // 업로드 디렉토리 생성
         File directory = new File(uploadDir);
         if (!directory.exists()) {
-            directory.mkdirs();
+            directory.mkdirs(); // 디렉토리 생성
         }
-
+    
+        // 고유한 파일 이름 생성 및 저장
         String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(uploadDir, uniqueFileName);
         file.transferTo(filePath.toFile());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    
+        // 사용자 객체에 프로필 이미지 경로 설정
         user.setProfileImage("/uploads/profile/" + uniqueFileName);
-
+    
+        // 변경된 사용자 정보 저장
         userRepository.save(user);
+    
+        // 저장된 프로필 이미지 경로 반환
         return user.getProfileImage();
+    }
+
+    // 기존 프로필 이미지 삭제
+    private void deleteExistingProfileImage(User user) {
+        if (user.getProfileImage() != null) {
+            String relativePath = user.getProfileImage().replace("/uploads/profile/", "");
+            File existingFile = new File(uploadDir, relativePath); // 파일 경로 생성
+            if (existingFile.exists()) {
+                existingFile.delete(); // 기존 파일 삭제
+            }
+            user.setProfileImage(null); // 데이터베이스에서 경로 초기화
+        }
+    }
+
+    // 프로필 이미지 삭제
+    public void deleteProfilePicture(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    
+        // 기존 이미지 삭제
+        deleteExistingProfileImage(user);
+    
+        // 사용자 데이터베이스 업데이트
+        userRepository.save(user);
     }
 
     // ID 중복 확인
