@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hoolhool.backend.entity.LikeType;
 import com.hoolhool.backend.service.LikeService;
 
 @RestController
@@ -21,10 +22,10 @@ public class LikeController {
     @Autowired
     private LikeService likeService;
 
-    // 좋아요 클릭,취소
+    // 좋아요 클릭, 취소
     @PostMapping("/{type}/{id}")
     public ResponseEntity<String> toggleLike(
-            @PathVariable String type,
+            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
             @PathVariable Long id,
             @RequestBody String userId) {
         String message = likeService.toggleLike(userId, type, id);
@@ -34,7 +35,7 @@ public class LikeController {
     // 좋아요 상태 확인
     @GetMapping("/{type}/{id}/status")
     public ResponseEntity<Boolean> isLiked(
-            @PathVariable String type,
+            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
             @PathVariable Long id,
             @RequestParam String userId) {
         boolean isLiked = likeService.isLikedByUser(userId, type, id);
@@ -44,7 +45,7 @@ public class LikeController {
     // 좋아요 개수 조회
     @GetMapping("/{type}/{id}/count")
     public ResponseEntity<Long> getLikeCount(
-            @PathVariable String type,
+            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
             @PathVariable Long id) {
         long count = likeService.countLikes(type, id);
         return ResponseEntity.ok(count);

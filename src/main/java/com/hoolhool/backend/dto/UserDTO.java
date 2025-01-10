@@ -2,6 +2,8 @@ package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.hoolhool.backend.entity.MBTI;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +22,7 @@ public class UserDTO {
     private String profileImage;
     private Long point;
     private LocalDateTime uDate;
-    private String mbti;
+    private MBTI mbti;
     private Boolean marketing;
     private String socialType; // 소셜 타입 추가 (local, kakao, Google)
     
@@ -72,10 +74,10 @@ public class UserDTO {
     public void setuDate(LocalDateTime uDate) {
         this.uDate = uDate;
     }
-    public String getMbti() {
+    public MBTI getMbti() {
         return mbti;
     }
-    public void setMbti(String mbti) {
+    public void setMbti(MBTI mbti) {
         this.mbti = mbti;
     }
     public String getPassword() {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hoolhool.backend.entity.Like;
+import com.hoolhool.backend.entity.LikeType;
 import com.hoolhool.backend.repository.LikeRepository;
 
 @Service
@@ -15,20 +16,20 @@ public class LikeService {
 
     @Autowired
     private LikeRepository likeRepository;
-    
+
     // 좋아요 클릭, 취소
     @Transactional
-    public String toggleLike(String userId, String type, Long id) {
+    public String toggleLike(String userId, LikeType type, Long id) { // type을 LikeType으로 변경
         Optional<Like> existingLike = null;
 
         switch (type) {
-            case "BOARD":
+            case BOARD:
                 existingLike = likeRepository.findByUserIdAndTypeAndBoardId(userId, type, id);
                 break;
-            case "COMMENT":
+            case COMMENT:
                 existingLike = likeRepository.findByUserIdAndTypeAndCommentId(userId, type, id);
                 break;
-            case "RECOMMENT":
+            case RECOMMENT:
                 existingLike = likeRepository.findByUserIdAndTypeAndRecommentId(userId, type, id);
                 break;
             default:
@@ -37,13 +38,13 @@ public class LikeService {
 
         if (existingLike != null && existingLike.isPresent()) {
             switch (type) {
-                case "BOARD":
+                case BOARD:
                     likeRepository.deleteByUserIdAndTypeAndBoardId(userId, type, id);
                     break;
-                case "COMMENT":
+                case COMMENT:
                     likeRepository.deleteByUserIdAndTypeAndCommentId(userId, type, id);
                     break;
-                case "RECOMMENT":
+                case RECOMMENT:
                     likeRepository.deleteByUserIdAndTypeAndRecommentId(userId, type, id);
                     break;
             }
@@ -51,13 +52,13 @@ public class LikeService {
         } else {
             Like newLike = new Like();
             newLike.setUserId(userId);
-            newLike.setType(type);
+            newLike.setType(type); // LikeType Enum 사용
             newLike.setLikeDate(LocalDateTime.now());
-            if ("BOARD".equals(type)) {
+            if (type == LikeType.BOARD) {
                 newLike.setBoardId(id);
-            } else if ("COMMENT".equals(type)) {
+            } else if (type == LikeType.COMMENT) {
                 newLike.setCommentId(id);
-            } else if ("RECOMMENT".equals(type)) {
+            } else if (type == LikeType.RECOMMENT) {
                 newLike.setRecommentId(id);
             }
             likeRepository.save(newLike);
@@ -66,13 +67,13 @@ public class LikeService {
     }
 
     // 좋아요 개수 조회
-    public long countLikes(String type, Long id) {
+    public long countLikes(LikeType type, Long id) { // type을 LikeType으로 변경
         switch (type) {
-            case "BOARD":
+            case BOARD:
                 return likeRepository.countByTypeAndBoardId(type, id);
-            case "COMMENT":
+            case COMMENT:
                 return likeRepository.countByTypeAndCommentId(type, id);
-            case "RECOMMENT":
+            case RECOMMENT:
                 return likeRepository.countByTypeAndRecommentId(type, id);
             default:
                 throw new IllegalArgumentException("Invalid type: " + type);
@@ -80,13 +81,13 @@ public class LikeService {
     }
 
     // 좋아요 여부 확인
-    public boolean isLikedByUser(String userId, String type, Long id) {
+    public boolean isLikedByUser(String userId, LikeType type, Long id) { // type을 LikeType으로 변경
         switch (type) {
-            case "BOARD":
+            case BOARD:
                 return likeRepository.findByUserIdAndTypeAndBoardId(userId, type, id).isPresent();
-            case "COMMENT":
+            case COMMENT:
                 return likeRepository.findByUserIdAndTypeAndCommentId(userId, type, id).isPresent();
-            case "RECOMMENT":
+            case RECOMMENT:
                 return likeRepository.findByUserIdAndTypeAndRecommentId(userId, type, id).isPresent();
             default:
                 throw new IllegalArgumentException("Invalid type: " + type);

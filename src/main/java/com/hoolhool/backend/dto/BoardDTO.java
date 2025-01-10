@@ -2,6 +2,8 @@ package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.hoolhool.backend.entity.BoardType;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -16,8 +18,10 @@ public class BoardDTO {
     private Boolean hidden;
     private String title;
     private Integer view;
-    private String type;
+    private BoardType type;
     private Long commentId;
+    private String status; // 상태: DRAFT or PUBLISHED
+    private LocalDateTime lastSavedAt; // 마지막 임시 저장 시간
 
     
     public Long getBoardId() {
@@ -68,18 +72,30 @@ public class BoardDTO {
     public void setView(Integer view) {
         this.view = view;
     }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
     public Long getCommentId() {
         return commentId;
     }
     public void setCommentId(Long commentId) {
         this.commentId = commentId;
     }
-
+    public BoardType getType() {
+        return type;
+    }
+    public void setType(BoardType type) {
+        this.type = type;
+    }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    public LocalDateTime getLastSavedAt() {
+        return lastSavedAt;
+    }
+    public void setLastSavedAt(LocalDateTime lastSavedAt) {
+        this.lastSavedAt = lastSavedAt;
+    }
+    
     
 }

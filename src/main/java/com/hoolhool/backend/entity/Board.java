@@ -42,9 +42,16 @@ public class Board {
     @Column(name = "view", columnDefinition = "INTEGER DEFAULT 0")
     private Integer view;
 
-    @Column(name = "type")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private BoardType type;
 
     @Column(name = "comment_id", nullable = true)
     private Long commentId;
+
+    @Column(name = "status", columnDefinition = "VARCHAR(20) DEFAULT 'PUBLISHED'")
+    private String status; // 상태: DRAFT or PUBLISHED
+
+    @Column(name = "last_saved_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private LocalDateTime lastSavedAt; // 마지막 임시 저장 시간
 }

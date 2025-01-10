@@ -60,14 +60,16 @@ public class User {
     @Column(name = "u_date", nullable = false)
     private LocalDateTime uDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", columnDefinition = "ENUM('USER', 'ADMIN') DEFAULT 'USER'")
-    private String role;
+    private Role role;
 
     @Column(name = "is_active", columnDefinition = "TINYINT DEFAULT 1")
     private Boolean isActive;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "mbti", columnDefinition = "ENUM('INTP', 'INTJ', 'INFP', 'INFJ', 'ISTP', 'ISTJ', 'ISFP', 'ISFJ', 'ENTP', 'ENTJ', 'ENFP', 'ENFJ', 'ESTP', 'ESTJ', 'ESFP', 'ESFJ')")
-    private String mbti;
+    private MBTI mbti;
 
     @Column(name = "personal")
     private String personal;

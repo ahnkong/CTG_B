@@ -2,6 +2,8 @@ package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.hoolhool.backend.entity.UserQuestTransactionStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +13,7 @@ public class UserQuestTransactionDTO {
     private Long userQuestId;
     private String userId;
     private Long questId;
-    private String status;
+    private UserQuestTransactionStatus status;
     private Integer progress;
     private LocalDateTime uQDate;
     
@@ -33,12 +35,7 @@ public class UserQuestTransactionDTO {
     public void setQuestId(Long questId) {
         this.questId = questId;
     }
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
+
     public Integer getProgress() {
         return progress;
     }
@@ -50,5 +47,11 @@ public class UserQuestTransactionDTO {
     }
     public void setuQDate(LocalDateTime uQDate) {
         this.uQDate = uQDate;
+    }
+    public UserQuestTransactionStatus getStatus() {
+        return status;
+    }
+    public void setStatus(UserQuestTransactionStatus status) {
+        this.status = status;
     }
 }

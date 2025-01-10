@@ -14,8 +14,9 @@ public class PointTransaction {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false, columnDefinition = "ENUM('EARN', 'SPEND')")
-    private String changeType;
+    private PointTransactionChangeType changeType;
 
     @Column(name = "amount", nullable = false)
     private Integer amount;

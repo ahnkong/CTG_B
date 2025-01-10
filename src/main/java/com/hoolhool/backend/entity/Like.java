@@ -24,8 +24,9 @@ public class Like {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, columnDefinition = "ENUM('BOARD', 'COMMENT', 'RECOMMENT')")
-    private String type;
+    private LikeType type;
 
     @Column(name = "target_id", nullable = false)
     private String targetId;

@@ -17,8 +17,9 @@ public class UserQuestTransaction {
     @Column(name = "quest_id", nullable = false)
     private Long questId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "ENUM('IN_PROGRESS', 'COMPLETED')")
-    private String status;
+    private UserQuestTransactionStatus status;
 
     @Column(name = "progress", nullable = false)
     private Integer progress;

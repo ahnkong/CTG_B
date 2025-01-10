@@ -2,6 +2,8 @@ package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.hoolhool.backend.entity.PointTransactionChangeType;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class PointTransactionDTO {
     private Long transactionId;
     private String userId;
-    private String changeType;
+    private PointTransactionChangeType changeType;
     private Integer amount;
     private String description;
     private LocalDateTime pointTransactionDate;
@@ -27,12 +29,7 @@ public class PointTransactionDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-    public String getChangeType() {
-        return changeType;
-    }
-    public void setChangeType(String changeType) {
-        this.changeType = changeType;
-    }
+
     public Integer getAmount() {
         return amount;
     }
@@ -50,6 +47,12 @@ public class PointTransactionDTO {
     }
     public void setPointTransactionDate(LocalDateTime pointTransactionDate) {
         this.pointTransactionDate = pointTransactionDate;
+    }
+    public PointTransactionChangeType getChangeType() {
+        return changeType;
+    }
+    public void setChangeType(PointTransactionChangeType changeType) {
+        this.changeType = changeType;
     }
     
 }

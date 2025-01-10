@@ -2,6 +2,8 @@ package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
 
+import com.hoolhool.backend.entity.LikeType;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class LikeDTO {
     private Long likeId;
     private String userId;
-    private String type;
+    private LikeType type;
     private String targetId;
     private LocalDateTime likeDate;
     private Long boardId;
@@ -29,12 +31,7 @@ public class LikeDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
+    
     public String getTargetId() {
         return targetId;
     }
@@ -64,6 +61,12 @@ public class LikeDTO {
     }
     public void setRecommentId(Long recommentId) {
         this.recommentId = recommentId;
+    }
+    public LikeType getType() {
+        return type;
+    }
+    public void setType(LikeType type) {
+        this.type = type;
     }
     
 }

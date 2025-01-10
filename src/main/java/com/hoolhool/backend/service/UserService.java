@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.hoolhool.backend.dto.UserDTO;
+import com.hoolhool.backend.entity.MBTI;
+import com.hoolhool.backend.entity.Role;
 import com.hoolhool.backend.entity.User;
 import com.hoolhool.backend.repository.UserRepository;
 
@@ -109,7 +111,7 @@ public class UserService {
         user.setProfileImage(userDTO.getProfileImage());
         user.setPoint(userDTO.getPoint() != null ? userDTO.getPoint() : 0L);
         user.setUDate(userDTO.getuDate() != null ? userDTO.getuDate() : LocalDateTime.now());
-        user.setMbti(userDTO.getMbti());
+        user.setMbti(userDTO.getMbti()); // 직접 할당
 
         // 기본값 처리
         // 소셜 타입에 따라 local 설정
@@ -118,7 +120,7 @@ public class UserService {
         } else {
             user.setLocal(1); // 자체 가입
         }
-        user.setRole("USER");
+        user.setRole(Role.USER); // 기본값 설정
         user.setIsActive(true);
 
         // 저장
@@ -145,7 +147,7 @@ public class UserService {
         if (userDTO.getInfo() != null) user.setInfo(userDTO.getInfo());
         if (userDTO.getTell() != null) user.setTell(userDTO.getTell());
         if (userDTO.getProfileImage() != null) user.setProfileImage(userDTO.getProfileImage());
-        if (userDTO.getMbti() != null) user.setMbti(userDTO.getMbti());
+        if (userDTO.getMbti() != null) user.setMbti(userDTO.getMbti()); // Enum 변환
 
         userRepository.save(user);
         return mapToDTO(user);
