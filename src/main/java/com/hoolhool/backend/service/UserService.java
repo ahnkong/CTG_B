@@ -37,8 +37,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성
@@ -91,6 +91,9 @@ public class UserService {
         }
         if (existsByNickname(userDTO.getNickname())) {
             throw new IllegalArgumentException("Nickname already exists");
+        }
+        if (existsByTell(userDTO.getTell())) {
+            throw new IllegalArgumentException("Tell already exists");
         }
 
         // 비밀번호 유효성 검사
@@ -244,6 +247,11 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
+    // 핸드폰 번호 중복 확인
+    public boolean existsByTell(String tell) {
+        return userRepository.existsByTell(tell);
+    }
+
     // 엔티티 -> DTO 변환
     private UserDTO mapToDTO(User user) {
         return new UserDTO(
@@ -264,8 +272,8 @@ public class UserService {
     }
     
     // 아이디 찾기
-    public String findId(String name, String phone, String mail) {
-        Optional<User> user = userRepository.findByNameAndTellAndEmail(name, phone, mail);
+    public String findId(String name, String tell, String mail) {
+        Optional<User> user = userRepository.findByNameAndTellAndEmail(name, tell, mail);
         return user.map(User::getUserId).orElse("일치하는 사용자가 없습니다.");
     }
 

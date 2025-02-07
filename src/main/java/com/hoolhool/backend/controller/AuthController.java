@@ -127,4 +127,10 @@ public class AuthController {
         boolean exists = userService.existsByNickname(nickname);
         return ResponseEntity.ok(!exists); // true: 사용 가능, false: 사용 중
     }
+
+    @GetMapping("/checkTell")
+    public ResponseEntity<Boolean> checkTell(@RequestParam String tell) {
+        boolean exists = userService.existsByTell(tell);
+        return ResponseEntity.ok(!exists); // true: 사용 가능, false: 사용 중
+    }
 }
