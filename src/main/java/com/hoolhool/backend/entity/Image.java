@@ -15,11 +15,13 @@ import lombok.Setter;
 @Table(name = "image")
 public class Image {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id", nullable = false)
     private Long imageId;
 
-    @Column(name = "board_id", nullable = false)
-    private Long boardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", referencedColumnName = "board_id", nullable = false)
+    private Board board;
 
     @Column(name = "file_name", nullable = false)
     private String fileName;

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,16 +49,6 @@ public class BoardService {
         this.commentRepository = commentRepository;
         this.reCommentRepository = reCommentRepository;
     }
-    
-    // 태그 유효성 검사 메서드
-    private void validateTags(String hashTag) {
-        if (hashTag != null) {
-            String[] tags = hashTag.split(",");
-            if (tags.length > 5) {
-                throw new IllegalArgumentException("태그는 최대 5개까지 입력 가능합니다.");
-            }
-        }
-    }
 
     // BoardType 유효성 검사 메서드
     // 기존 private -> public으로 변경
@@ -66,13 +58,6 @@ public class BoardService {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("유효하지 않은 BoardType입니다: " + type);
         }
-    }
-
-    // 타입별 게시글 필터링
-    public Page<BoardDTO> getBoardsByType(BoardType type, Pageable pageable) {
-        validateBoardType(type.toString());
-        return boardRepository.findByType(type, pageable)
-                .map(this::convertToDTO);
     }
 
     // 모든 게시글 반환 (DTO 변환 포함)
@@ -87,51 +72,64 @@ public class BoardService {
         return convertToDTO(board);
     }
 
-    // 타입별 조회수 및 좋아요 수 정렬된 게시글 변환
-    public Page<BoardDTO> getBoardsByTypeAndSort(BoardType type, String sort, Pageable pageable) {
-        validateBoardType(type.toString());
-    
-        if ("views".equalsIgnoreCase(sort)) {
-            return boardRepository.findByTypeOrderByViewDesc(type, pageable)
-                    .map(this::convertToDTO);
-        } else if ("likes".equalsIgnoreCase(sort)) {
-            return boardRepository.findAllByLikesCountAndType(type, pageable)
-                    .map(this::convertToDTO);
-        }
-    
-        return boardRepository.findByType(type, pageable)
-                .map(this::convertToDTO);
-    }
-
     // 검색 및 정렬된 게시글 반환
+    // 검색 + 타입 + 날짜 필터 + 정렬을 한 번에 처리
     public Page<BoardDTO> getBoards(String search, BoardType type, Integer filterDate, String sort, Pageable pageable) {
-        // 타입 필터링
-        if (type != null) {
-            return boardRepository.findByType(type, pageable).map(this::convertToDTO);
-        }
 
-        // 날짜 필터링
-        if (filterDate != null) {
-            LocalDateTime startDate = LocalDateTime.now().minusDays(filterDate);
-            return boardRepository.findByCDateAfter(startDate, pageable).map(this::convertToDTO);
-        }
+        // 입력 파라미터 로그
+        System.out.println("==== getBoards 메서드 호출 ====");
+        System.out.println("search: " + search);
+        System.out.println("type: " + type);
+        System.out.println("filterDate: " + filterDate);
+        System.out.println("sort: " + sort);
+        System.out.println("pageable: " + pageable);
 
-        // 검색어 처리
-        if (search != null && !search.isEmpty()) {
-            return boardRepository.findByTitleContainingOrContentContaining(search, search, pageable)
-                    .map(this::convertToDTO);
-        }
+        LocalDateTime startDate = (filterDate != null) ? LocalDateTime.now().minusDays(filterDate) : null;
 
-        // 기본 정렬된 전체 게시글 반환
-        return boardRepository.findAll(pageable).map(this::convertToDTO);
+        try {
+            Page<Board> boardPage;
+
+            // filterDate가 있다면, 해당 기간 동안 좋아요가 가장 많은 게시글 조회
+            if (filterDate != null) {
+                return boardRepository.findByLikesWithinDateRange(type, startDate, pageable)
+                        .map(this::convertToDTO);
+            }
+
+            // 정렬 처리
+            if (sort != null) {
+                switch (sort.toLowerCase()) {
+                    case "views":
+                        return boardRepository.findByOrderByViewDesc(pageable).map(this::convertToDTO);
+                    case "likes":
+                        return boardRepository.findAllByLikesCount(pageable).map(this::convertToDTO);
+                    case "latest":
+                        return boardRepository.findByOrderByCDateDesc(pageable).map(this::convertToDTO);
+                }
+            }
+
+            boardPage = boardRepository.findBoardsWithFilters(search, type, startDate, pageable);
+    
+            return boardPage.map(this::convertToDTO);
+    
+        } catch (Exception e) {
+            // 예외 로그 출력
+            System.err.println("getBoards 메서드 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // 예외를 다시 던져 클라이언트에 전달
+        }
     }
 
     // 게시글 생성
     public BoardDTO createBoard(BoardDTO boardDTO, List<MultipartFile> images) throws IOException {
         validateBoardType(boardDTO.getType().toString()); // BoardType 유효성 검사
-        validateTags(boardDTO.getHashTag()); // 태그 유효성 검사
+        
+        // 해시태그 처리
+        String processedHashTags = processHashTags(boardDTO.getHashTag());
+        boardDTO.setHashTag(processedHashTags);
 
         Board board = convertToEntity(boardDTO);
+        
+        board.setBoardId(null);
         board.setCDate(LocalDateTime.now());
         board.setView(0);
         board.setHidden(false);
@@ -150,7 +148,10 @@ public class BoardService {
     //게시글 수정
     public BoardDTO updateBoard(Long boardId, BoardDTO boardDTO, List<MultipartFile> newImages) {
         validateBoardType(boardDTO.getType().toString()); // BoardType 유효성 검사 추가
-        validateTags(boardDTO.getHashTag()); // 태그 유효성 검사
+        
+        // 해시태그 처리
+        String processedHashTags = processHashTags(boardDTO.getHashTag());
+        boardDTO.setHashTag(processedHashTags);
 
         // 기존 게시글 조회
         Board board = boardRepository.findById(boardId)
@@ -194,12 +195,12 @@ public class BoardService {
         imageService.deleteImagesByBoardId(boardId);
 
         // 게시글에 연결된 좋아요 삭제
-        likeRepository.deleteByBoardId(boardId);
+        likeRepository.deleteByBoard_BoardId(boardId);
     
         // 게시글에 연결된 댓글 삭제
-        commentRepository.findByBoardId(boardId).forEach(comment -> {
+        commentRepository.findByBoard_BoardId(boardId).forEach(comment -> {
             // 댓글에 연결된 대댓글 삭제
-            reCommentRepository.deleteByCommentId(comment.getCommentId());
+            reCommentRepository.deleteByComment_CommentId(comment.getCommentId());
             // 댓글 삭제
             commentRepository.deleteById(comment.getCommentId());
         });
@@ -304,19 +305,75 @@ public class BoardService {
         boardRepository.deleteAll(oldDrafts);
     }
 
+    /* 해시태그 */
+    // 태그 유효성 검사 및 처리 메서드
+    private String processHashTags(String hashTagInput) {
+        if (hashTagInput == null || hashTagInput.isEmpty()) {
+            return null;
+        }
+
+        // 공백으로 구분된 해시태그를 배열로 변환
+        String[] tags = hashTagInput.split("\\s+");
+
+        // 태그 개수 제한
+        if (tags.length > 5) {
+            throw new IllegalArgumentException("해시태그는 최대 5개까지 입력 가능합니다.");
+        }
+
+        // 각 태그에서 # 제거 및 길이 검증
+        for (int i = 0; i < tags.length; i++) {
+            if (tags[i].length() > 30) {
+                throw new IllegalArgumentException("각 해시태그는 최대 30자까지 입력 가능합니다.");
+            }
+            tags[i] = tags[i].replaceFirst("#", ""); // # 기호 제거
+        }
+
+        // 콤마로 연결된 문자열로 반환
+        return String.join(",", tags);
+    }
+
+    // 해시태그로 게시글 검색
+    public List<BoardDTO> searchByHashTag(String tag) {
+        if (tag == null || tag.isEmpty()) {
+            throw new IllegalArgumentException("해시태그는 비어 있을 수 없습니다.");
+        }
+
+        // # 제거 (클라이언트에서 입력받은 값 처리)
+        String processedTag = tag.replaceFirst("#", "");
+
+        // 레포지토리에서 검색
+        List<Board> boards = boardRepository.findByHashTag(processedTag);
+
+        // 결과를 DTO로 변환
+        return boards.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
     // 엔티티를 DTO로 변환
     private BoardDTO convertToDTO(Board board) {
+        String hashTags = board.getHashTag();
+        String processedHashTags = null;
+    
+        if (hashTags != null && !hashTags.isEmpty()) {
+            processedHashTags = String.join(" ",
+                    Stream.of(hashTags.split(","))
+                            .map(tag -> "#" + tag)
+                            .collect(Collectors.toList())
+            );
+        }
+    
         return new BoardDTO(
                 board.getBoardId(),
                 board.getUserId(),
                 board.getContent(),
                 board.getCDate(),
-                board.getHashTag(),
+                processedHashTags, // null 또는 해시태그 문자열 반환
                 board.getHidden(),
                 board.getTitle(),
                 board.getView(),
                 board.getType(),
-                board.getCommentId(),
                 board.getStatus(),
                 board.getLastSavedAt()
         );
@@ -334,7 +391,6 @@ public class BoardService {
                 boardDTO.getTitle(),
                 boardDTO.getView(),
                 boardDTO.getType(),
-                boardDTO.getCommentId(),
                 boardDTO.getStatus(),
                 boardDTO.getLastSavedAt()
         );

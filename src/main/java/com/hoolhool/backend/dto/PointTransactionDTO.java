@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PointTransactionDTO {
     private Long transactionId;
-    private String userId;
+    private UserDTO user; // 사용자 정보 포함
     private PointTransactionChangeType changeType;
     private Integer amount;
     private String description;
@@ -23,13 +23,18 @@ public class PointTransactionDTO {
     public void setTransactionId(Long transactionId) {
         this.transactionId = transactionId;
     }
-    public String getUserId() {
-        return userId;
+    public UserDTO getUser() {
+        return user;
     }
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
-
+    public PointTransactionChangeType getChangeType() {
+        return changeType;
+    }
+    public void setChangeType(PointTransactionChangeType changeType) {
+        this.changeType = changeType;
+    }
     public Integer getAmount() {
         return amount;
     }
@@ -48,11 +53,7 @@ public class PointTransactionDTO {
     public void setPointTransactionDate(LocalDateTime pointTransactionDate) {
         this.pointTransactionDate = pointTransactionDate;
     }
-    public PointTransactionChangeType getChangeType() {
-        return changeType;
-    }
-    public void setChangeType(PointTransactionChangeType changeType) {
-        this.changeType = changeType;
-    }
+    
+    
     
 }

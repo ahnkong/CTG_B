@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeDTO {
+public class LikeDTO {    
     private Long likeId;
     private String userId;
-    private LikeType type;
     private String targetId;
-    private LocalDateTime likeDate;
     private Long boardId;
     private Long commentId;
     private Long recommentId;
+    private LikeType type; // BOARD, COMMENT, RECOMMENT
+    private LocalDateTime likeDate;
     
     public Long getLikeId() {
         return likeId;
@@ -31,18 +31,11 @@ public class LikeDTO {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-    
     public String getTargetId() {
         return targetId;
     }
     public void setTargetId(String targetId) {
         this.targetId = targetId;
-    }
-    public LocalDateTime getLikeDate() {
-        return likeDate;
-    }
-    public void setLikeDate(LocalDateTime likeDate) {
-        this.likeDate = likeDate;
     }
     public Long getBoardId() {
         return boardId;
@@ -68,5 +61,12 @@ public class LikeDTO {
     public void setType(LikeType type) {
         this.type = type;
     }
+    public LocalDateTime getLikeDate() {
+        return likeDate;
+    }
+    public void setLikeDate(LocalDateTime likeDate) {
+        this.likeDate = likeDate;
+    }
+    
     
 }

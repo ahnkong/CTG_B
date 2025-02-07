@@ -1,6 +1,7 @@
 package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.hoolhool.backend.entity.MBTI;
 
@@ -18,14 +19,15 @@ public class UserDTO {
     private String email;
     private String password;
     private String info;
+    private Boolean marketing;
     private String tell;
     private String profileImage;
     private Long point;
     private LocalDateTime uDate;
+    private Boolean isActive;
     private MBTI mbti;
-    private Boolean marketing;
+    private String personal;
     private String socialType; // 소셜 타입 추가 (local, kakao, Google)
-    
     public String getUserId() {
         return userId;
     }
@@ -38,17 +40,35 @@ public class UserDTO {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
     public String getEmail() {
         return email;
     }
     public void setEmail(String email) {
         this.email = email;
     }
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
     public String getInfo() {
         return info;
     }
     public void setInfo(String info) {
         this.info = info;
+    }
+    public Boolean getMarketing() {
+        return marketing;
+    }
+    public void setMarketing(Boolean marketing) {
+        this.marketing = marketing;
     }
     public String getTell() {
         return tell;
@@ -74,23 +94,23 @@ public class UserDTO {
     public void setuDate(LocalDateTime uDate) {
         this.uDate = uDate;
     }
+    public Boolean getIsActive() {
+        return isActive;
+    }
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
     public MBTI getMbti() {
         return mbti;
     }
     public void setMbti(MBTI mbti) {
         this.mbti = mbti;
     }
-    public String getPassword() {
-        return password;
+    public String getPersonal() {
+        return personal;
     }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    public Boolean getMarketing() {
-        return marketing;
-    }
-    public void setMarketing(boolean marketing) {
-        this.marketing = marketing;
+    public void setPersonal(String personal) {
+        this.personal = personal;
     }
     public String getSocialType() {
         return socialType;
@@ -98,11 +118,13 @@ public class UserDTO {
     public void setSocialType(String socialType) {
         this.socialType = socialType;
     }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
+
+    
+    
+    
+    
+    
+    
+    
 
 }

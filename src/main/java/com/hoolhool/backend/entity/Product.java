@@ -1,13 +1,14 @@
 package com.hoolhool.backend.entity;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "product")
 public class Product {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
@@ -26,7 +27,6 @@ public class Product {
     @Column(name = "produce_date", nullable = false)
     private LocalDateTime produceDate;
 
-    @Column(name = "purchase_id")
-    private Long purchaseId;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPurchase> purchases;
 }
-

@@ -1,6 +1,7 @@
 package com.hoolhool.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,13 @@ import lombok.Setter;
 @Table(name = "recomment")
 public class ReComment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "recomment_id", nullable = false)
     private Long recommentId;
 
-    @Column(name = "comment_id", nullable = false)
-    private Long commentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id", referencedColumnName = "comment_id", nullable = false)
+    private Comment comment;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -31,6 +34,6 @@ public class ReComment {
     @Column(name = "re_c_date", nullable = false)
     private LocalDateTime reCDate;
 
-    @Column(name = "re_likes", columnDefinition = "INTEGER")
-    private Integer reLikes;
+    @OneToMany(mappedBy = "reComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes;
 }

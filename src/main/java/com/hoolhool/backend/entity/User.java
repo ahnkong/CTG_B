@@ -1,14 +1,13 @@
 package com.hoolhool.backend.entity;
 
 import javax.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -74,15 +73,15 @@ public class User {
     @Column(name = "personal")
     private String personal;
 
-    @Column(name = "board_id", nullable = true)
-    private Long boardId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes;
 
-    @Column(name = "transaction_id", nullable = true)
-    private Long transactionId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PointTransaction> pointTransactions;
 
-    @Column(name = "user_quest_id", nullable = true)
-    private Long userQuestId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPurchase> purchases;
 
-    @Column(name = "purchase_id", nullable = true)
-    private Long purchaseId;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserQuestTransaction> questTransactions;
 }

@@ -1,6 +1,7 @@
 package com.hoolhool.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -8,6 +9,7 @@ import javax.persistence.*;
 @Table(name = "quest")
 public class Quest {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "quest_id", nullable = false)
     private Long questId;
 
@@ -26,7 +28,6 @@ public class Quest {
     @Column(name = "quest_date", nullable = false)
     private LocalDateTime questDate;
 
-    @Column(name = "user_quest_id", nullable = false)
-    private Long userQuestId;
+    @OneToMany(mappedBy = "quest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserQuestTransaction> questTransactions;
 }
-

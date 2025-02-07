@@ -9,7 +9,7 @@ import com.hoolhool.backend.entity.ReComment;
 public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
     
     // 특정 댓글에 속한 대댓글 조회
-    List<ReComment> findByCommentId(Long commentId);
+    List<ReComment> findByComment_CommentId(Long commentId);
 
     // 특정 사용자가 작성한 대댓글 조회
     List<ReComment> findByUserId(String userId);
@@ -18,5 +18,5 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
     List<ReComment> findByContentContaining(String keyword);
 
     // 특정 댓글의 대댓글 삭제
-    void deleteByCommentId(Long commentId);
+    void deleteByComment_CommentId(Long commentId);
 }

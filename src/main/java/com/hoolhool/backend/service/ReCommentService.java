@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hoolhool.backend.dto.ReCommentDTO;
+import com.hoolhool.backend.entity.Comment;
 import com.hoolhool.backend.entity.ReComment;
+import com.hoolhool.backend.repository.CommentRepository;
 import com.hoolhool.backend.repository.LikeRepository;
 import com.hoolhool.backend.repository.ReCommentRepository;
 
@@ -20,16 +22,27 @@ public class ReCommentService {
     private ReCommentRepository reCommentRepository;
 
     @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
     private LikeRepository likeRepository;
+
+    public ReCommentService(ReCommentRepository reCommentRepository, CommentRepository commentRepository, LikeRepository likeRepository) {
+        this.reCommentRepository = reCommentRepository;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
+    }
 
     // 대댓글 생성
     public ReCommentDTO createReComment(ReCommentDTO reCommentDTO) {
+        Comment comment = commentRepository.findById(reCommentDTO.getCommentId())
+                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다: " + reCommentDTO.getCommentId()));
+
         ReComment reComment = new ReComment();
-        reComment.setCommentId(reCommentDTO.getCommentId());
+        reComment.setComment(comment); // Comment 객체 설정
         reComment.setUserId(reCommentDTO.getUserId());
         reComment.setContent(reCommentDTO.getContent());
         reComment.setReCDate(LocalDateTime.now());
-        reComment.setReLikes(0); // 초기 좋아요 수
 
         ReComment savedReComment = reCommentRepository.save(reComment);
         return convertToDTO(savedReComment);
@@ -55,7 +68,7 @@ public class ReCommentService {
         }
 
         // 대댓글에 연결된 좋아요 삭제
-        likeRepository.deleteByRecommentId(reCommentId);
+        likeRepository.deleteByReComment_RecommentId(reCommentId);
 
         // 대댓글 삭제
         reCommentRepository.deleteById(reCommentId);
@@ -63,7 +76,7 @@ public class ReCommentService {
 
     // 특정 댓글의 대댓글 조회
     public List<ReCommentDTO> getReCommentsByCommentId(Long commentId) {
-        List<ReComment> reComments = reCommentRepository.findByCommentId(commentId);
+        List<ReComment> reComments = reCommentRepository.findByComment_CommentId(commentId);
         return reComments.stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
@@ -84,12 +97,11 @@ public class ReCommentService {
     // 엔티티 -> 디티오 변환
     private ReCommentDTO convertToDTO(ReComment reComment) {
         return new ReCommentDTO(
-                reComment.getRecommentId(),
-                reComment.getCommentId(),
-                reComment.getUserId(),
-                reComment.getContent(),
-                reComment.getReCDate(),
-                reComment.getReLikes()
+            reComment.getRecommentId(),
+            reComment.getUserId(),
+            reComment.getComment().getCommentId(), // Comment 객체에서 commentId 추출
+            reComment.getContent(),
+            reComment.getReCDate()
         );
     }
 

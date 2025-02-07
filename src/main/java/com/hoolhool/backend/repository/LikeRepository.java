@@ -10,27 +10,27 @@ import com.hoolhool.backend.entity.LikeType;
 public interface LikeRepository extends JpaRepository<Like, Long> {
     
      // 특정 게시글, 댓글, 대댓글의 좋아요 여부 확인
-    Optional<Like> findByUserIdAndTypeAndBoardId(String userId, LikeType type, Long boardId);
-    Optional<Like> findByUserIdAndTypeAndCommentId(String userId, LikeType type, Long commentId);
-    Optional<Like> findByUserIdAndTypeAndRecommentId(String userId, LikeType type, Long recommentId);
+    Optional<Like> findByUser_UserIdAndTypeAndBoard_BoardId(String userId, LikeType type, Long boardId);
+    Optional<Like> findByUser_UserIdAndTypeAndComment_CommentId(String userId, LikeType type, Long commentId);
+    Optional<Like> findByUser_UserIdAndTypeAndReComment_RecommentId(String userId, LikeType type, Long recommentId);
 
     // 특정 게시글, 댓글, 대댓글의 전체 좋아요 수
-    long countByTypeAndBoardId(LikeType type, Long boardId);
-    long countByTypeAndCommentId(LikeType type, Long commentId);
-    long countByTypeAndRecommentId(LikeType type, Long recommentId);
+    long countByTypeAndBoard_BoardId(LikeType type, Long boardId);
+    long countByTypeAndComment_CommentId(LikeType type, Long commentId);
+    long countByTypeAndReComment_RecommentId(LikeType type, Long recommentId);
 
     // 특정 게시글, 댓글, 대댓글의 좋아요 삭제
-    void deleteByUserIdAndTypeAndBoardId(String userId, LikeType type, Long boardId);
-    void deleteByUserIdAndTypeAndCommentId(String userId, LikeType type, Long commentId);
-    void deleteByUserIdAndTypeAndRecommentId(String userId, LikeType type, Long recommentId);
+    void deleteByUser_UserIdAndTypeAndBoard_BoardId(String userId, LikeType type, Long boardId);
+    void deleteByUser_UserIdAndTypeAndComment_CommentId(String userId, LikeType type, Long commentId);
+    void deleteByUser_UserIdAndTypeAndReComment_RecommentId(String userId, LikeType type, Long recommentId);
 
     // 게시글 ID로 좋아요 삭제
-    void deleteByBoardId(Long boardId);
+    void deleteByBoard_BoardId(Long boardId);
 
     // 댓글 ID로 좋아요 삭제
-    void deleteByCommentId(Long commentId);
+    void deleteByComment_CommentId(Long commentId);
 
     // 대댓글 ID로 좋아요 삭제
-    void deleteByRecommentId(Long recommentId);
+    void deleteByReComment_RecommentId(Long recommentId);
 
 }

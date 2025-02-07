@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserPurchaseDTO {
     private Long purchaseId;
-    private String userId;
-    private Long productId;
+    private UserDTO user; // 사용자 정보 포함
+    private ProductDTO product; // 상품 정보 포함
     private Integer quantity;
     private Integer totalPrice;
     private LocalDateTime purchaseDate;
@@ -21,17 +21,17 @@ public class UserPurchaseDTO {
     public void setPurchaseId(Long purchaseId) {
         this.purchaseId = purchaseId;
     }
-    public String getUserId() {
-        return userId;
+    public UserDTO getUser() {
+        return user;
     }
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
-    public Long getProductId() {
-        return productId;
+    public ProductDTO getProduct() {
+        return product;
     }
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProduct(ProductDTO product) {
+        this.product = product;
     }
     public Integer getQuantity() {
         return quantity;
@@ -51,4 +51,8 @@ public class UserPurchaseDTO {
     public void setPurchaseDate(LocalDateTime purchaseDate) {
         this.purchaseDate = purchaseDate;
     }
+
+    
+    
+    
 }

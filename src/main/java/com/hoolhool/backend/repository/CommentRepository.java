@@ -11,7 +11,7 @@ import com.hoolhool.backend.entity.Comment;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     
     // 특정 게시글에 속한 댓글 조회
-    List<Comment> findByBoardId(Long boardId);
+    List<Comment> findByBoard_BoardId(Long boardId);
 
     // 특정 사용자가 작성한 댓글 조회
     List<Comment> findByUserId(String userId);
@@ -21,8 +21,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> searchCommentsByKeyword(@Param("keyword") String keyword);
 
     // 댓글 삭제 (특정 게시글의 모든 댓글 삭제)
-    void deleteByBoardId(Long boardId);
+    void deleteByBoard_BoardId(Long boardId);
 
     // 특정 댓글에 속한 대댓글만 조회
-    List<Comment> findByReCommentId(Long reCommentId);
+    List<Comment> findByReComments_RecommentId(Long recommentId);
 }

@@ -9,11 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReCommentDTO {
     private Long recommentId;
-    private Long commentId;
-    private String userId;
+    private String userId; 
+    private Long commentId; 
     private String content;
     private LocalDateTime reCDate;
-    private Integer reLikes;
     
     public Long getRecommentId() {
         return recommentId;
@@ -21,17 +20,17 @@ public class ReCommentDTO {
     public void setRecommentId(Long recommentId) {
         this.recommentId = recommentId;
     }
-    public Long getCommentId() {
-        return commentId;
-    }
-    public void setCommentId(Long commentId) {
-        this.commentId = commentId;
-    }
     public String getUserId() {
         return userId;
     }
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+    public Long getCommentId() {
+        return commentId;
+    }
+    public void setCommentId(Long commentId) {
+        this.commentId = commentId;
     }
     public String getContent() {
         return content;
@@ -45,10 +44,7 @@ public class ReCommentDTO {
     public void setReCDate(LocalDateTime reCDate) {
         this.reCDate = reCDate;
     }
-    public Integer getReLikes() {
-        return reLikes;
-    }
-    public void setReLikes(Integer reLikes) {
-        this.reLikes = reLikes;
-    }
+    
+    
+    
 }

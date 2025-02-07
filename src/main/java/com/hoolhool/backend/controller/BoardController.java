@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoolhool.backend.dto.BoardDTO;
 import com.hoolhool.backend.entity.BoardType;
 import com.hoolhool.backend.service.BoardService;
@@ -43,17 +45,26 @@ public class BoardController {
     }
 
     // 게시글 생성
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<BoardDTO> createBoard(
-            @RequestPart("board") BoardDTO boardDTO,
+            @RequestPart("board") String boardJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         try {
-            boardService.validateBoardType(boardDTO.getType().toString()); // BoardType 유효성 검사 추가
+            System.out.println("Received Raw JSON: " + boardJson);
+
+            // JSON -> DTO 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+            BoardDTO boardDTO = objectMapper.readValue(boardJson, BoardDTO.class);
+
+            System.out.println("Converted BoardDTO: " + boardDTO);
+
+            boardService.validateBoardType(boardDTO.getType().toString());
             BoardDTO createdBoard = boardService.createBoard(boardDTO, images);
+
             return ResponseEntity.ok(createdBoard);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -67,9 +78,10 @@ public class BoardController {
             boardService.validateBoardType(boardDTO.getType().toString()); // BoardType 유효성 검사 추가
             BoardDTO updatedBoard = boardService.updateBoard(boardId, boardDTO, images);
             return ResponseEntity.ok(updatedBoard);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -80,8 +92,7 @@ public class BoardController {
             boardService.deleteBoard(boardId);
             return ResponseEntity.ok("게시글 및 연결된 이미지가 삭제되었습니다.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("게시글 삭제 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
@@ -92,42 +103,18 @@ public class BoardController {
             BoardDTO board = boardService.getBoardById(boardId);
             return ResponseEntity.ok(board);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
-    // 타입별 게시글 조회
-    @GetMapping("/type")
-    public ResponseEntity<Page<BoardDTO>> getBoardsByType(
-            @RequestParam(value = "type") String type,
-            Pageable pageable) {
+    // 해시태그 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<BoardDTO>> searchByHashTag(@RequestParam String tag) {
         try {
-            boardService.validateBoardType(type); // BoardType 유효성 검사 추가
-            Page<BoardDTO> boards = boardService.getBoardsByType(BoardType.valueOf(type), pageable);
+            List<BoardDTO> boards = boardService.searchByHashTag(tag);
             return ResponseEntity.ok(boards);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    // 타입 및 정렬된 게시글 조회
-    @GetMapping("/type/sorted")
-    public ResponseEntity<Page<BoardDTO>> getBoardsByTypeAndSort(
-            @RequestParam(value = "type") String type,
-            @RequestParam(value = "sort", required = false) String sort,
-            Pageable pageable) {
-        try {
-            boardService.validateBoardType(type);
-            Page<BoardDTO> boards = boardService.getBoardsByTypeAndSort(BoardType.valueOf(type), sort, pageable);
-            return ResponseEntity.ok(boards);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
         }
     }
 
@@ -135,16 +122,24 @@ public class BoardController {
     @GetMapping
     public ResponseEntity<Page<BoardDTO>> getBoards(
             @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "type", required = false) BoardType type, // 추가된 BoardType 파라미터
-            @RequestParam(value = "filterDate", required = false) Integer filterDate,
+            @RequestParam(value = "type", required = false) String type,  // 👈 String으로 입력 받음
             @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(value = "filterDate", required = false) Integer filterDate, // 👈 날짜 필터 추가
             Pageable pageable) {
         try {
-            Page<BoardDTO> boards = boardService.getBoards(search, type, filterDate, sort, pageable);
+            BoardType boardType = null;
+            if (type != null) {
+                try {
+                    boardType = BoardType.valueOf(type.toUpperCase()); // 👈 String → Enum 변환
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+            }
+
+            Page<BoardDTO> boards = boardService.getBoards(search, boardType, filterDate, sort, pageable);
             return ResponseEntity.ok(boards);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -162,10 +157,12 @@ public class BoardController {
 
     /* 임시저장 */
     // 임시 저장 API
-    @PostMapping("/draft")
-    public ResponseEntity<BoardDTO> saveDraft(@RequestBody BoardDTO boardDTO) {
+    @PostMapping(value = "/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BoardDTO> saveDraft(
+            @RequestPart("board") BoardDTO boardDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         try {
-            BoardDTO draft = boardService.saveDraft(boardDTO, null); // 이미지가 없을 경우 null
+            BoardDTO draft = boardService.saveDraft(boardDTO, images); // 이미지도 처리 가능하도록 수정
             return ResponseEntity.ok(draft);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

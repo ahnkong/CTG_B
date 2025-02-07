@@ -1,6 +1,7 @@
 package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ public class ProductDTO {
     private Integer price;
     private Integer stock;
     private LocalDateTime produceDate;
-    private Long purchaseId;
+    private List<UserPurchaseDTO> purchases; // 구매 정보 포함
     
     public Long getProductId() {
         return productId;
@@ -52,10 +53,12 @@ public class ProductDTO {
     public void setProduceDate(LocalDateTime produceDate) {
         this.produceDate = produceDate;
     }
-    public Long getPurchaseId() {
-        return purchaseId;
+    public List<UserPurchaseDTO> getPurchases() {
+        return purchases;
     }
-    public void setPurchaseId(Long purchaseId) {
-        this.purchaseId = purchaseId;
+    public void setPurchases(List<UserPurchaseDTO> purchases) {
+        this.purchases = purchases;
     }
+    
+    
 }

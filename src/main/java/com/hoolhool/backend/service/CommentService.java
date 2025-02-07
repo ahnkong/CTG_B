@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hoolhool.backend.dto.CommentDTO;
 import com.hoolhool.backend.dto.ReCommentDTO;
+import com.hoolhool.backend.entity.Board;
 import com.hoolhool.backend.entity.Comment;
 import com.hoolhool.backend.entity.ReComment;
+import com.hoolhool.backend.repository.BoardRepository;
 import com.hoolhool.backend.repository.CommentRepository;
 import com.hoolhool.backend.repository.LikeRepository;
 import com.hoolhool.backend.repository.ReCommentRepository;
@@ -23,24 +25,35 @@ public class CommentService {
     private CommentRepository commentRepository;
 
     @Autowired
+    private BoardRepository boardRepository;
+
+    @Autowired
     private ReCommentRepository reCommentRepository;
 
     @Autowired
     private LikeRepository likeRepository;
 
-
+    public CommentService(CommentRepository commentRepository, BoardRepository boardRepository, 
+                          LikeRepository likeRepository, ReCommentRepository reCommentRepository) {
+        this.commentRepository = commentRepository;
+        this.boardRepository = boardRepository;
+        this.likeRepository = likeRepository;
+        this.reCommentRepository = reCommentRepository;
+    }
 
     // 댓글 생성
     public CommentDTO createComment(CommentDTO commentDTO) {
+        Board board = boardRepository.findById(commentDTO.getBoardId())
+                        .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다 : " + commentDTO.getBoardId()));
+
         Comment comment = new Comment();
-        comment.setBoardId(commentDTO.getBoardId());
+        comment.setBoard(board); 
         comment.setUserId(commentDTO.getUserId());
         comment.setContent(commentDTO.getContent());
         comment.setCoCDate(LocalDateTime.now());
-        comment.setCoLikes(0); // 초기 좋아요 수
     
         Comment savedComment = commentRepository.save(comment);
-        return convertToDTOWithReComments(savedComment); // 대댓글 포함 변환 메서드 호출
+        return convertToDTOWithReComments(savedComment);
     }
 
     // 댓글 수정
@@ -64,7 +77,7 @@ public class CommentService {
         }
 
         // 댓글에 연결된 좋아요 삭제
-        likeRepository.deleteByCommentId(commentId);
+        likeRepository.deleteByComment_CommentId(commentId);
 
         // 댓글 삭제
         commentRepository.deleteById(commentId);
@@ -72,7 +85,7 @@ public class CommentService {
 
     // 특정 게시글의 댓글 조회 (대댓글 포함)
     public List<CommentDTO> getCommentsByBoardId(Long boardId) {
-        List<Comment> comments = commentRepository.findByBoardId(boardId);
+        List<Comment> comments = commentRepository.findByBoard_BoardId(boardId);
         return comments.stream()
                 .map(this::convertToDTOWithReComments) // 대댓글 포함 변환 메서드 호출
                 .collect(Collectors.toList());
@@ -96,33 +109,44 @@ public class CommentService {
 
     // 엔티티 -> 디티오 변환
     private CommentDTO convertToDTOWithReComments(Comment comment) {
-        // 댓글에 속한 대댓글 조회
-        List<ReComment> reComments = reCommentRepository.findByCommentId(comment.getCommentId());
-        List<ReCommentDTO> reCommentDTOs = reComments.stream()
+        List<ReCommentDTO> reCommentDTOs = reCommentRepository.findByComment_CommentId(comment.getCommentId()).stream()
                 .map(this::convertReCommentToDTO)
                 .collect(Collectors.toList());
-    
-        // 댓글 DTO 생성 및 대댓글 포함
-        CommentDTO commentDTO = new CommentDTO();
-        commentDTO.setCommentId(comment.getCommentId());
-        commentDTO.setBoardId(comment.getBoardId());
-        commentDTO.setUserId(comment.getUserId());
-        commentDTO.setContent(comment.getContent());
-        commentDTO.setCoCDate(comment.getCoCDate());
-        commentDTO.setCoLikes(comment.getCoLikes());
-        commentDTO.setReComments(reCommentDTOs); // 대댓글 포함
-        return commentDTO;
+
+        return new CommentDTO(
+                comment.getCommentId(),
+                comment.getUserId(),
+                comment.getBoard().getBoardId(), // Board 객체에서 boardId 추출
+                comment.getContent(),
+                comment.getCoCDate(),
+                reCommentDTOs // 대댓글 포함
+        );
     }
 
     // 대댓글 엔티티 -> 디티오 변환
     private ReCommentDTO convertReCommentToDTO(ReComment reComment) {
         return new ReCommentDTO(
-                reComment.getRecommentId(),
-                reComment.getCommentId(),
-                reComment.getUserId(),
-                reComment.getContent(),
-                reComment.getReCDate(),
-                reComment.getReLikes()
+            reComment.getRecommentId(),
+            reComment.getUserId(),
+            reComment.getComment().getCommentId(), // 대댓글이 속한 댓글 ID 저장
+            reComment.getContent(),
+            reComment.getReCDate()
         );
     }
+
+    // 🔹 DTO -> 엔티티 변환 (Board 객체 설정)
+    private Comment convertToEntity(CommentDTO commentDTO) {
+        Board board = boardRepository.findById(commentDTO.getBoardId())
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + commentDTO.getBoardId()));
+
+        return new Comment(
+                commentDTO.getCommentId(),
+                board, // Board 객체 설정
+                commentDTO.getUserId(),
+                commentDTO.getContent(),
+                commentDTO.getCoCDate()
+        );
+    }
+
+    
 }

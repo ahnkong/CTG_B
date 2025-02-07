@@ -11,7 +11,6 @@ public class ImageDTO {
     private String fileName;
     private String filePath;
     private Integer imageOrder;
-
     
     public Long getImageId() {
         return imageId;
@@ -44,5 +43,9 @@ public class ImageDTO {
         this.imageOrder = imageOrder;
     }
 
+
     
+
+
+
 }

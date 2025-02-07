@@ -261,12 +261,14 @@ public class UserService {
                 user.getEmail(),
                 user.getPassword(),
                 user.getInfo(),
+                user.getMarketing(),
                 user.getTell(),
                 user.getProfileImage(),
                 user.getPoint(),
                 user.getUDate(),
+                user.getIsActive(),
                 user.getMbti(),
-                user.getMarketing(),
+                user.getPersonal(),
                 null
         );
     }

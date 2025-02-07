@@ -21,25 +21,29 @@ public class Like {
     @Column(name = "like_id", nullable = false)
     private Long likeId;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private User user;
+
+    @Column(name = "target_id")
+    private String targetId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", referencedColumnName = "board_id", nullable = true)
+    private Board board;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id", referencedColumnName = "comment_id", nullable = true)
+    private Comment comment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recomment_id", referencedColumnName = "recomment_id", nullable = true)
+    private ReComment reComment;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, columnDefinition = "ENUM('BOARD', 'COMMENT', 'RECOMMENT')")
     private LikeType type;
 
-    @Column(name = "target_id", nullable = false)
-    private String targetId;
-
     @Column(name = "like_date", nullable = false)
     private LocalDateTime likeDate;
-
-    @Column(name = "board_id")
-    private Long boardId;
-
-    @Column(name = "comment_id")
-    private Long commentId;
-
-    @Column(name = "recomment_id")
-    private Long recommentId;
 }

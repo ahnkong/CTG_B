@@ -1,6 +1,7 @@
 package com.hoolhool.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ public class QuestDTO {
     private Integer rewardPoint;
     private Boolean isActive;
     private LocalDateTime questDate;
-    private Long userQuestId;
+    private List<UserQuestTransactionDTO> questTransactions; // 퀘스트 진행 정보 포함
     
     public Long getQuestId() {
         return questId;
@@ -52,10 +53,12 @@ public class QuestDTO {
     public void setQuestDate(LocalDateTime questDate) {
         this.questDate = questDate;
     }
-    public Long getUserQuestId() {
-        return userQuestId;
+    public List<UserQuestTransactionDTO> getQuestTransactions() {
+        return questTransactions;
     }
-    public void setUserQuestId(Long userQuestId) {
-        this.userQuestId = userQuestId;
+    public void setQuestTransactions(List<UserQuestTransactionDTO> questTransactions) {
+        this.questTransactions = questTransactions;
     }
+    
+    
 }
