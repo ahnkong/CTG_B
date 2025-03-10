@@ -42,6 +42,23 @@ public class BoardDTO {
         this.lastSavedAt = lastSavedAt;
     }
 
+    public BoardDTO(Long boardId, String userId, String content, LocalDateTime cDate, 
+                    String hashTag, Boolean hidden, String title, Integer view, 
+                    BoardType type, String status, LocalDateTime lastSavedAt, List<ImageDTO> images) {
+        this.boardId = boardId;
+        this.userId = userId;
+        this.content = content;
+        this.cDate = cDate;
+        this.hashTag = hashTag;
+        this.hidden = hidden;
+        this.title = title;
+        this.view = view;
+        this.type = type;
+        this.status = status;
+        this.lastSavedAt = lastSavedAt;
+        this.images = images;
+    }
+
     public Long getBoardId() {
         return boardId;
     }

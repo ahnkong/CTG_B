@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,7 +26,9 @@ import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoolhool.backend.dto.BoardDTO;
+import com.hoolhool.backend.entity.Board;
 import com.hoolhool.backend.entity.BoardType;
+import com.hoolhool.backend.repository.BoardRepository;
 import com.hoolhool.backend.service.BoardService;
 import com.hoolhool.backend.service.ImageService;
 
@@ -121,24 +125,17 @@ public class BoardController {
     // 검색 및 정렬된 게시글 조회
     @GetMapping
     public ResponseEntity<Page<BoardDTO>> getBoards(
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "type", required = false) String type,  // 👈 String으로 입력 받음
-            @RequestParam(value = "sort", required = false) String sort,
-            @RequestParam(value = "filterDate", required = false) Integer filterDate, // 👈 날짜 필터 추가
-            Pageable pageable) {
-        try {
-            BoardType boardType = null;
-            if (type != null) {
-                try {
-                    boardType = BoardType.valueOf(type.toUpperCase()); // 👈 String → Enum 변환
-                } catch (IllegalArgumentException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-                }
-            }
+        @RequestParam(value = "search", required = false) String search,
+        @RequestParam(value = "filterDate", required = false) Integer filterDate,
+        @RequestParam(value = "sort", required = false) String sort,
+        @RequestParam(value = "type", required = false) String type,
+        Pageable pageable) {
 
-            Page<BoardDTO> boards = boardService.getBoards(search, boardType, filterDate, sort, pageable);
+        try {
+            Page<BoardDTO> boards = boardService.getBoards(search, filterDate, sort, type, pageable);
             return ResponseEntity.ok(boards);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

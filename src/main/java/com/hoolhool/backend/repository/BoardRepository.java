@@ -48,14 +48,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT i FROM Image i WHERE i.board.boardId = :boardId ORDER BY i.imageOrder")
     List<Image> findImagesByBoardId(Long boardId);
 
-    // 좋아요 개수 기준 + 타입별 정렬
-    @Query("SELECT b FROM Board b " +
-       "LEFT JOIN b.likes l " +
-       "WHERE l.type = :type " +
-       "GROUP BY b " +
-       "ORDER BY COUNT(l) DESC, b.cDate DESC")
-    Page<Board> findAllByLikesCountAndType(BoardType type, Pageable pageable);
-
     // 조회수 기준 + 타입별 정렬
     Page<Board> findByTypeOrderByViewDesc(BoardType type, Pageable pageable);
 
@@ -79,20 +71,22 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 제목 또는 내용에 검색어가 포함된 게시글 조회 (기존 `searchBoards`에서 사용)
     Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable);
+   
+    // 검색어와 타입으로 게시글 조회 (최신순 정렬)
+    Page<Board> findByTitleContainingAndType(String title, BoardType type, Pageable pageable);
 
-   @Query(value = "SELECT b.*, COALESCE(l.like_count, 0) AS like_count " +
-        "FROM board b " +
-        "LEFT JOIN (" +
-        "    SELECT board_id, COUNT(*) AS like_count " +
-        "    FROM likes " +
-        "    WHERE like_date >= :startDate " +
-        "    GROUP BY board_id " +
-        ") l ON b.board_id = l.board_id " +
-        "WHERE (:type IS NULL OR b.type = :type) " +
-        "ORDER BY like_count DESC",
-        countQuery = "SELECT COUNT(*) FROM board b",
-        nativeQuery = true)
-   Page<Board> findByLikesWithinDateRange(@Param("type") BoardType type,
-                                          @Param("startDate") LocalDateTime startDate,
-                                          Pageable pageable);
+    // 특정 기간 내 좋아요 수 기준 정렬
+    // - filterDate: 최근 7일 또는 30일 (null이면 전체)
+    // - type: 게시글 타입 (POSITIVE, NEGATIVE)
+    @Query("SELECT b FROM Board b " +
+           "LEFT JOIN b.likes l ON l.type = 'BOARD' " +
+           "WHERE b.type = :type " +
+           "AND (:filterDate IS NULL OR l.likeDate >= CURRENT_DATE - :filterDate) " +
+           "GROUP BY b.boardId " +
+           "ORDER BY COUNT(l.likeId) DESC")
+    Page<Board> findBoardsOrderByLikeCount(
+            @Param("type") BoardType type,
+            @Param("filterDate") Integer filterDate,
+            Pageable pageable
+    );
 }

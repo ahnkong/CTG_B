@@ -9,13 +9,16 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hoolhool.backend.dto.BoardDTO;
+import com.hoolhool.backend.dto.ImageDTO;
 import com.hoolhool.backend.entity.Board;
 import com.hoolhool.backend.entity.BoardType;
 import com.hoolhool.backend.entity.Like;
@@ -74,50 +77,34 @@ public class BoardService {
 
     // 검색 및 정렬된 게시글 반환
     // 검색 + 타입 + 날짜 필터 + 정렬을 한 번에 처리
-    public Page<BoardDTO> getBoards(String search, BoardType type, Integer filterDate, String sort, Pageable pageable) {
-
-        // 입력 파라미터 로그
-        System.out.println("==== getBoards 메서드 호출 ====");
-        System.out.println("search: " + search);
-        System.out.println("type: " + type);
-        System.out.println("filterDate: " + filterDate);
-        System.out.println("sort: " + sort);
-        System.out.println("pageable: " + pageable);
-
-        LocalDateTime startDate = (filterDate != null) ? LocalDateTime.now().minusDays(filterDate) : null;
-
-        try {
-            Page<Board> boardPage;
-
-            // filterDate가 있다면, 해당 기간 동안 좋아요가 가장 많은 게시글 조회
-            if (filterDate != null) {
-                return boardRepository.findByLikesWithinDateRange(type, startDate, pageable)
-                        .map(this::convertToDTO);
-            }
-
-            // 정렬 처리
-            if (sort != null) {
-                switch (sort.toLowerCase()) {
-                    case "views":
-                        return boardRepository.findByOrderByViewDesc(pageable).map(this::convertToDTO);
-                    case "likes":
-                        return boardRepository.findAllByLikesCount(pageable).map(this::convertToDTO);
-                    case "latest":
-                        return boardRepository.findByOrderByCDateDesc(pageable).map(this::convertToDTO);
-                }
-            }
-
-            boardPage = boardRepository.findBoardsWithFilters(search, type, startDate, pageable);
+    @Transactional(readOnly = true)
+    public Page<BoardDTO> getBoards(String search, Integer filterDate, String sort, String type, Pageable pageable) {
+        Sort sorting = Sort.by(Sort.Direction.DESC, "cDate");
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sorting);
     
-            return boardPage.map(this::convertToDTO);
+        Page<Board> boards;
     
-        } catch (Exception e) {
-            // 예외 로그 출력
-            System.err.println("getBoards 메서드 예외 발생: " + e.getMessage());
-            e.printStackTrace();
-            throw e; // 예외를 다시 던져 클라이언트에 전달
+        // 좋아요 순 정렬 (1주일 또는 1달 단위)
+        if ("likesLast7Days".equals(sort) || "likesLast30Days".equals(sort)) {
+            boards = boardRepository.findBoardsOrderByLikeCount(
+                    BoardType.valueOf(type), 
+                    filterDate, 
+                    pageable
+            );
+        } 
+        // 최신순 정렬
+        else if (search != null && !search.isEmpty()) {
+            boards = boardRepository.findByTitleContainingAndType(search, BoardType.valueOf(type), pageable);
+        } 
+        // 조회수 기준 정렬
+        else {
+            boards = boardRepository.findByTypeOrderByViewDesc(BoardType.valueOf(type), pageable);
         }
+    
+        // Board 엔티티를 BoardDTO로 변환하여 반환
+        return boards.map(this::convertToDTO);
     }
+
 
     // 게시글 생성
     public BoardDTO createBoard(BoardDTO boardDTO, List<MultipartFile> images) throws IOException {
@@ -312,20 +299,29 @@ public class BoardService {
             return null;
         }
 
-        // 공백으로 구분된 해시태그를 배열로 변환
-        String[] tags = hashTagInput.split("\\s+");
+        // 해시태그를 쉼표와 공백으로 분리
+        String[] tags = hashTagInput.split("[,\\s]+");
 
         // 태그 개수 제한
         if (tags.length > 5) {
             throw new IllegalArgumentException("해시태그는 최대 5개까지 입력 가능합니다.");
         }
 
-        // 각 태그에서 # 제거 및 길이 검증
+        // 각 태그에서 # 및 길이 검증
         for (int i = 0; i < tags.length; i++) {
-            if (tags[i].length() > 30) {
-                throw new IllegalArgumentException("각 해시태그는 최대 30자까지 입력 가능합니다.");
+            String tag = tags[i].trim();
+    
+            // 모든 태그는 #으로 시작해야 함
+            if (!tag.startsWith("#")) {
+                tag = "#" + tag;
             }
-            tags[i] = tags[i].replaceFirst("#", ""); // # 기호 제거
+    
+            // 해시태그 길이 제한 (최대 30자)
+            if (tag.length() > 30) {
+                throw new IllegalArgumentException("해시태그는 30자 이하로 입력해야 합니다: " + tag);
+            }
+    
+            tags[i] = tag;
         }
 
         // 콤마로 연결된 문자열로 반환
@@ -352,17 +348,21 @@ public class BoardService {
 
 
     // 엔티티를 DTO로 변환
-    private BoardDTO convertToDTO(Board board) {
+    public BoardDTO convertToDTO(Board board) {
         String hashTags = board.getHashTag();
         String processedHashTags = null;
     
         if (hashTags != null && !hashTags.isEmpty()) {
+            // 이미 #이 붙어 있으므로 중복으로 #을 붙이지 않도록 수정
             processedHashTags = String.join(" ",
                     Stream.of(hashTags.split(","))
-                            .map(tag -> "#" + tag)
+                            .map(String::trim) // 불필요한 공백 제거
                             .collect(Collectors.toList())
             );
         }
+
+        // 이미지 서비스에서 이미지 목록을 가져옴
+        List<ImageDTO> images = imageService.getImagesByBoardId(board.getBoardId());
     
         return new BoardDTO(
                 board.getBoardId(),
@@ -375,7 +375,8 @@ public class BoardService {
                 board.getView(),
                 board.getType(),
                 board.getStatus(),
-                board.getLastSavedAt()
+                board.getLastSavedAt(),
+                images
         );
     }
 

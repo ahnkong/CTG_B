@@ -2,6 +2,8 @@ package com.hoolhool.backend.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,8 +42,14 @@ public class ImageService {
 
         List<Image> images = new ArrayList<>();
 
+        // 현재 날짜를 "yyyyMMdd" 형식으로 변환
+        String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
         for (MultipartFile file : files) {
-            String uniqueFileName = System.currentTimeMillis() + "-" + file.getOriginalFilename();
+            // 파일 이름을 "날짜-원본파일이름" 형식으로 변경
+            String originalFileName = file.getOriginalFilename();
+            String uniqueFileName = currentDate + "-" + originalFileName;
+            
             String filePath = uploadDir + "/" + uniqueFileName;
             String relativeFilePath = "uploads/" + uniqueFileName;
 

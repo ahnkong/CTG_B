@@ -25,7 +25,7 @@ public class Like {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "target_id")
+    @Column(name = "target_id", columnDefinition = "VARCHAR(255)")
     private String targetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
