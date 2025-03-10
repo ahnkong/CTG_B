@@ -87,6 +87,26 @@ public class UserController {
         return ResponseEntity.ok(Map.of("isValid", String.valueOf(isPasswordValid)));
     }
 
+
+    @PostMapping("/{userId}/updatePassword")
+    public ResponseEntity<Void> updatePassword(@PathVariable String userId, @RequestBody Map<String, String> request) {
+        String newPassword = request.get("password");  // ✅ 프론트에서 보낸 새 비밀번호
+    
+        if (newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().build(); // 비밀번호 8자 이상 체크
+        }
+    
+        boolean isUpdated = userService.updatePassword(userId, newPassword);
+    
+        if (!isUpdated) {
+            return ResponseEntity.notFound().build(); // 유저 못 찾으면 404 응답
+        }
+    
+        return ResponseEntity.ok().build(); // 성공 시 200 응답 (메시지 없음)
+    }
+    
+    
+
     // 자기소개 수정
     @PutMapping("/{id}/updateInfo")
     public ResponseEntity<Map<String, String>> updateUserInfo(
@@ -100,5 +120,14 @@ public class UserController {
         }
     }
 
+    //마케팅 동의 활용 수정
+    //사용자 정보 업데이트 (마케팅 동의 포함)
+    @PutMapping("/{id}/updateMarketing")
+    public ResponseEntity<Boolean> updateMarketing(@PathVariable String id, @RequestBody Map<String, Boolean> request) {
+        boolean marketingConsent = request.get("marketing");
+        boolean updatedMarketing = userService.updateMarketing(id, marketingConsent);
+        return ResponseEntity.ok(updatedMarketing);
+    }
+    
     
 }

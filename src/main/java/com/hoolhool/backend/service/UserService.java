@@ -17,6 +17,7 @@ import com.hoolhool.backend.entity.User;
 import com.hoolhool.backend.repository.UserRepository;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Service
 public class UserService {
-    
+
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -135,22 +136,27 @@ public class UserService {
 
     // 사용자 조회
     public UserDTO findById(String id) {
-        User user = userRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
         return mapToDTO(user);
     }
 
     // 마이페이지 프로필 수정 후 업데이트
     public UserDTO updateUser(String userId, UserDTO userDTO) {
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new IllegalArgumentException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // 업데이트할 필드 설정
-        if (userDTO.getNickname() != null) user.setNickname(userDTO.getNickname());
-        if (userDTO.getInfo() != null) user.setInfo(userDTO.getInfo());
-        if (userDTO.getTell() != null) user.setTell(userDTO.getTell());
-        if (userDTO.getProfileImage() != null) user.setProfileImage(userDTO.getProfileImage());
-        if (userDTO.getMbti() != null) user.setMbti(userDTO.getMbti()); // Enum 변환
+        if (userDTO.getNickname() != null)
+            user.setNickname(userDTO.getNickname());
+        if (userDTO.getInfo() != null)
+            user.setInfo(userDTO.getInfo());
+        if (userDTO.getPassword() != null)
+            user.setPassword(userDTO.getPassword());
+        if (userDTO.getTell() != null)
+            user.setTell(userDTO.getTell());
+        if (userDTO.getProfileImage() != null)
+            user.setProfileImage(userDTO.getProfileImage());
+        if (userDTO.getMbti() != null)
+            user.setMbti(userDTO.getMbti()); // Enum 변환
 
         userRepository.save(user);
         return mapToDTO(user);
@@ -162,15 +168,36 @@ public class UserService {
     }
 
     // 비밀번호 변경
+    @Transactional
     public boolean updatePassword(String id, String newPassword) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            user.get().setPassword(newPassword); // 프론트에서 전달된 password를 새 비밀번호로 저장
-            userRepository.save(user.get()); // 변경된 사용자 정보 저장
-            return true;
+        Optional<User> userOptional = userRepository.findById(id);
+        
+        if (userOptional.isEmpty()) {
+            System.out.println("❌ 비밀번호 변경 실패: 사용자 ID " + id + " 를 찾을 수 없음");
+            return false; // 유저를 찾을 수 없음
         }
-        return false;
+    
+        User user = userOptional.get();
+        System.out.println("✅ 기존 비밀번호: " + user.getPassword()); // 기존 비밀번호 확인
+        user.setPassword(newPassword); // 🔥 새 비밀번호 설정
+        userRepository.save(user); // 🔥 변경된 정보 저장
+    
+        System.out.println("✅ 비밀번호 변경 완료! 새로운 비밀번호: " + user.getPassword());
+        return true;
     }
+    
+
+    // 비밀번호 변경
+    // 비밀번호 변경 (암호화 X)
+    // public boolean updatePassword(String id, String newPassword) {
+    // Optional<User> user = userRepository.findById(id);
+    // if (user.isPresent()) {
+    // user.get().setPassword(newPassword); // 🔥 암호화 없이 그대로 저장
+    // userRepository.save(user.get());
+    // return true;
+    // }
+    // return false;
+    // }
 
     // 사용자 ID와 비밀번호 검증
     public boolean validateUser(String userId, String password) {
@@ -183,27 +210,27 @@ public class UserService {
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-    
+
         // 기존 이미지 삭제
         deleteExistingProfileImage(user);
-    
+
         // 업로드 디렉토리 생성
         File directory = new File(uploadDir);
         if (!directory.exists()) {
             directory.mkdirs(); // 디렉토리 생성
         }
-    
+
         // 고유한 파일 이름 생성 및 저장
         String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(uploadDir, uniqueFileName);
         file.transferTo(filePath.toFile());
-    
+
         // 사용자 객체에 프로필 이미지 경로 설정
         user.setProfileImage("/uploads/profile/" + uniqueFileName);
-    
+
         // 변경된 사용자 정보 저장
         userRepository.save(user);
-    
+
         // 저장된 프로필 이미지 경로 반환
         return user.getProfileImage();
     }
@@ -224,10 +251,10 @@ public class UserService {
     public void deleteProfilePicture(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-    
+
         // 기존 이미지 삭제
         deleteExistingProfileImage(user);
-    
+
         // 사용자 데이터베이스 업데이트
         userRepository.save(user);
     }
@@ -269,10 +296,9 @@ public class UserService {
                 user.getIsActive(),
                 user.getMbti(),
                 user.getPersonal(),
-                null
-        );
+                null);
     }
-    
+
     // 아이디 찾기
     public String findId(String name, String tell, String mail) {
         Optional<User> user = userRepository.findByNameAndTellAndEmail(name, tell, mail);
@@ -298,5 +324,15 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    // ✅ 마케팅 동의 여부 업데이트 메서드 추가
+    @Transactional
+    public boolean updateMarketing(String userId, boolean marketing) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        userRepository.updateMarketing(userId, marketing);
+        return marketing;
     }
 }
