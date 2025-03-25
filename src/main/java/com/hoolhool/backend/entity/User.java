@@ -84,4 +84,19 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserQuestTransaction> questTransactions;
+
+    public String getSocialType() {
+        throw new UnsupportedOperationException("Unimplemented method 'getSocialType'");
+    }
+
+
+    public Long getPoint() {
+        return point;
+    }
+    
+    public void setPoint(Long point) {
+        this.point = point;
+    }
+    
+
 }

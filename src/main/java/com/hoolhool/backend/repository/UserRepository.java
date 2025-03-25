@@ -46,4 +46,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     void updateMarketing(@Param("userId") String userId, @Param("marketing") Boolean marketing);
 
 
+    //  ID가 있는지 확인
+    Optional<User> findByUserId(String userId);
+
+
+
+
 }

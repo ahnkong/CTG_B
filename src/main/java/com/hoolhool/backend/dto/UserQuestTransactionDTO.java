@@ -16,6 +16,7 @@ public class UserQuestTransactionDTO {
     private UserQuestTransactionStatus status;
     private Integer progress;
     private LocalDateTime uQDate;
+
     
     public Long getUserQuestId() {
         return userQuestId;
