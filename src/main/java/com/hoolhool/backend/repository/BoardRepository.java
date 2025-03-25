@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hoolhool.backend.dto.BoardDTO;
 import com.hoolhool.backend.entity.Board;
@@ -18,6 +19,13 @@ import com.hoolhool.backend.entity.Comment;
 import com.hoolhool.backend.entity.Image;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
+
+    // ✅ 조회수 증가 JPA Query
+    @Modifying
+    @Transactional
+    @Query("UPDATE Board b SET b.view = b.view + 1 WHERE b.boardId = :boardId")
+    void incrementViewCount(@Param("boardId") Long boardId);
+    
 
     // 좋아요 수 기준 게시글 정렬
     @Query("SELECT b FROM Board b LEFT JOIN Like l ON l.board = b WHERE l.type = com.hoolhool.backend.entity.LikeType.BOARD GROUP BY b ORDER BY COUNT(l) DESC")
@@ -33,7 +41,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
                                     @Param("type") BoardType type,  // 타입 변경
                                     @Param("startDate") LocalDateTime startDate,
                                     Pageable pageable); 
-
     // 조회수 기준 정렬 
     Page<Board> findByOrderByViewDesc(Pageable pageable);
 

@@ -2,7 +2,10 @@ package com.hoolhool.backend.repository;
 
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 
 import com.hoolhool.backend.entity.Like;
 import com.hoolhool.backend.entity.LikeType;
@@ -20,8 +23,16 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     long countByTypeAndReComment_RecommentId(LikeType type, Long recommentId);
 
     // 특정 게시글, 댓글, 대댓글의 좋아요 삭제
+    @Modifying
+    @Transactional
     void deleteByUser_UserIdAndTypeAndBoard_BoardId(String userId, LikeType type, Long boardId);
+
+    @Modifying
+    @Transactional
     void deleteByUser_UserIdAndTypeAndComment_CommentId(String userId, LikeType type, Long commentId);
+
+    @Modifying
+    @Transactional
     void deleteByUser_UserIdAndTypeAndReComment_RecommentId(String userId, LikeType type, Long recommentId);
 
     // 게시글 ID로 좋아요 삭제

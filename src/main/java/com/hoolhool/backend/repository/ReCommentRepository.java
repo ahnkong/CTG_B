@@ -3,6 +3,8 @@ package com.hoolhool.backend.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.hoolhool.backend.entity.ReComment;
 
@@ -19,4 +21,8 @@ public interface ReCommentRepository extends JpaRepository<ReComment, Long> {
 
     // 특정 댓글의 대댓글 삭제
     void deleteByComment_CommentId(Long commentId);
+
+    // 특정 댓글에 속한 대댓글 갯수 반환
+    @Query("SELECT COUNT(rc) FROM ReComment rc WHERE rc.comment.commentId IN (SELECT c.commentId FROM Comment c WHERE c.board.boardId = :boardId)")
+    long countReCommentsByBoardId(@Param("boardId") Long boardId);
 }

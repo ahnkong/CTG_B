@@ -1,6 +1,7 @@
 package com.hoolhool.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,8 @@ public class CommentController {
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(
             @PathVariable Long commentId,
-            @RequestBody String content) {
+            @RequestBody Map<String, String> payload) { // JSON으로 받기
+        String content = payload.get("content"); // "content" 키 값만 추출
         CommentDTO updatedComment = commentService.updateComment(commentId, content);
         return ResponseEntity.ok(updatedComment);
     }
@@ -51,8 +53,8 @@ public class CommentController {
 
     // 특정 게시글의 댓글 조회
     @GetMapping("/by-board/{boardId}")
-    public ResponseEntity<List<CommentDTO>> getCommentsByBoardId(@PathVariable Long boardId) {
-        List<CommentDTO> comments = commentService.getCommentsByBoardId(boardId);
+    public ResponseEntity<List<CommentDTO>> getCommentsByBoardId(@PathVariable Long boardId, @RequestParam String userId) {
+        List<CommentDTO> comments = commentService.getCommentsByBoardId(boardId, userId);
         return ResponseEntity.ok(comments); // 댓글과 대댓글 포함 리스트 반환
     }
 
@@ -68,6 +70,13 @@ public class CommentController {
     public ResponseEntity<List<CommentDTO>> searchComments(@RequestParam String keyword) {
         List<CommentDTO> comments = commentService.searchComments(keyword);
         return ResponseEntity.ok(comments);
+    }
+
+    // 특정 게시글의 전체 댓글 수 반환 (댓글 수 + 대댓글 수)
+    @GetMapping("/count/{boardId}")
+    public ResponseEntity<Long> getTotalCommentCount(@PathVariable Long boardId) {
+        long totalComments = commentService.countTotalComments(boardId);
+        return ResponseEntity.ok(totalComments);
     }
 
 }

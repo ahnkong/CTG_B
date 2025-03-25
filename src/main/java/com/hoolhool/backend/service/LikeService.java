@@ -49,11 +49,12 @@ public class LikeService {
     // 좋아요 클릭, 취소
     @Transactional
     public String toggleLike(String userId, LikeType type, Long id) { // type을 LikeType으로 변경
+        // 1. 사용자 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
-
+        
+        // 2. 기본 좋아요 여부 확인
         Optional<Like> existingLike = Optional.empty();
-
         switch (type) {
             case BOARD:
                 existingLike = likeRepository.findByUser_UserIdAndTypeAndBoard_BoardId(userId, type, id);
@@ -68,6 +69,7 @@ public class LikeService {
                 throw new IllegalArgumentException("잘못된 LikeType: " + type);
         }
 
+        // 3. 기존 좋아요가 있는경우 삭제
         if (existingLike.isPresent()) {
             switch (type) {
                 case BOARD:

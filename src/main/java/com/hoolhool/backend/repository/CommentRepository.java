@@ -25,4 +25,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     // 특정 댓글에 속한 대댓글만 조회
     List<Comment> findByReComments_RecommentId(Long recommentId);
+
+    // 특정 댓글에 있는 댓글 갯수 반환
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.board.boardId = :boardId")
+    long countCommentsByBoardId(@Param("boardId") Long boardId);
 }

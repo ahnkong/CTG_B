@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,12 @@ import com.hoolhool.backend.dto.ImageDTO;
 import com.hoolhool.backend.entity.Board;
 import com.hoolhool.backend.entity.BoardType;
 import com.hoolhool.backend.entity.Like;
+import com.hoolhool.backend.entity.User;
 import com.hoolhool.backend.repository.BoardRepository;
 import com.hoolhool.backend.repository.CommentRepository;
 import com.hoolhool.backend.repository.LikeRepository;
 import com.hoolhool.backend.repository.ReCommentRepository;
+import com.hoolhool.backend.repository.UserRepository;
 
 @Service
 public class BoardService {
@@ -45,12 +48,16 @@ public class BoardService {
     @Autowired
     private ReCommentRepository reCommentRepository;
 
-    public BoardService(BoardRepository boardRepository, ImageService imageService, LikeRepository likeRepository, CommentRepository commentRepository, ReCommentRepository reCommentRepository) {
+    @Autowired
+    private UserRepository userRepository;
+
+    public BoardService(BoardRepository boardRepository, ImageService imageService, LikeRepository likeRepository, CommentRepository commentRepository, ReCommentRepository reCommentRepository, UserRepository userRepository) {
         this.boardRepository = boardRepository;
         this.imageService = imageService;
         this.likeRepository = likeRepository;
         this.commentRepository = commentRepository;
         this.reCommentRepository = reCommentRepository;
+        this.userRepository = userRepository;
     }
 
     // BoardType 유효성 검사 메서드
@@ -72,7 +79,16 @@ public class BoardService {
     public BoardDTO getBoardById(Long boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + boardId));
-        return convertToDTO(board);
+
+        // 게시글 작성자의 프로필 이미지 가져오기
+        User user = userRepository.findById(board.getUserId())
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + board.getUserId()));
+        
+        BoardDTO boardDTO = convertToDTO(board);
+        boardDTO.setUserProfileImage(user.getProfileImage()); // ✅ DTO에 프로필 이미지 추가
+        boardDTO.setUserNickname(user.getNickname());
+
+        return boardDTO;
     }
 
     // 검색 및 정렬된 게시글 반환
@@ -203,14 +219,11 @@ public class BoardService {
     }
 
     // 조회수 증가
-    public BoardDTO incrementViews(Long boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다: " + boardId));
-
-        board.setView(board.getView() + 1);
-        Board updatedBoard = boardRepository.save(board);
-
-        return convertToDTO(updatedBoard);
+    @Transactional
+    @Modifying
+    public void incrementViews(Long boardId) {
+        boardRepository.incrementViewCount(boardId);
+        boardRepository.flush(); // 변경 사항을 즉시 DB에 반영
     }
 
     /*

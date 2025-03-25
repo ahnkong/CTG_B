@@ -37,8 +37,9 @@ public class ReCommentController {
     @PutMapping("/{reCommentId}")
     public ResponseEntity<ReCommentDTO> updateReComment(
             @PathVariable Long reCommentId,
+            @RequestParam String userId,
             @RequestBody String content) {
-        ReCommentDTO updatedReComment = reCommentService.updateReComment(reCommentId, content);
+        ReCommentDTO updatedReComment = reCommentService.updateReComment(reCommentId, content, userId);
         return ResponseEntity.ok(updatedReComment);
     }
 
@@ -51,9 +52,16 @@ public class ReCommentController {
 
     // 특정 댓글의 대댓글 조회
     @GetMapping("/by-comment/{commentId}")
-    public ResponseEntity<List<ReCommentDTO>> getReCommentsByCommentId(@PathVariable Long commentId) {
-        List<ReCommentDTO> reComments = reCommentService.getReCommentsByCommentId(commentId);
+    public ResponseEntity<List<ReCommentDTO>> getReCommentsByCommentId(@PathVariable Long commentId, @RequestParam(required = false) String userId) {
+        List<ReCommentDTO> reComments = reCommentService.getReCommentsByCommentId(commentId, userId);
         return ResponseEntity.ok(reComments);
+    }
+
+    // 대댓글 검색 - 키워드 기반, 좋아요 상태 없음
+    @GetMapping("/search")
+    public ResponseEntity<List<ReCommentDTO>> searchReComments(@RequestParam String keyword) {
+        List<ReCommentDTO> results = reCommentService.searchReComments(keyword);
+        return ResponseEntity.ok(results);
     }
 
 }

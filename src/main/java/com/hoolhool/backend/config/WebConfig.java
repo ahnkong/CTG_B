@@ -47,8 +47,8 @@ public class WebConfig implements WebMvcConfigurer{
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // "uploads" 경로를 실제 디렉토리로 매핑
         registry.addResourceHandler("/uploads/**")
-                // .addResourceLocations("file:/Users/jieunseo/uploads/"); // 실제 파일 저장 경로_서즌
-                .addResourceLocations("file:/Users/ahncoco/uploads/"); // 실제 파일 저장 경로_안코코
+                .addResourceLocations("file:/Users/jieunseo/uploads/"); // 실제 파일 저장 경로_서즌
+                // .addResourceLocations("file:/Users/ahncoco/uploads/"); // 실제 파일 저장 경로_안코코
                 // .addResourceLocations("file:/Users/hylee/uploads/"); // 실제 파일 저장 경로_나카이마
     }
 

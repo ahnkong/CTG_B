@@ -1,9 +1,12 @@
 package com.hoolhool.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,11 +26,18 @@ public class LikeController {
     private LikeService likeService;
 
     // 좋아요 클릭, 취소
-    @PostMapping("/{type}/{id}")
+    @PatchMapping("/{type}/{id}")
     public ResponseEntity<String> toggleLike(
             @PathVariable LikeType type, // type을 LikeType Enum으로 변경
             @PathVariable Long id,
-            @RequestBody String userId) {
+            @RequestBody Map<String, String> requestBody) {
+        
+        String userId = requestBody.get("userId");
+
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body("User ID is required");
+        }
+
         String message = likeService.toggleLike(userId, type, id);
         return ResponseEntity.ok(message);
     }

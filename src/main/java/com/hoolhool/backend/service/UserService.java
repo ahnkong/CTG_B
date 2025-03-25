@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +40,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성

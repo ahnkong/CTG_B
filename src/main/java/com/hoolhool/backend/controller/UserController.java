@@ -36,7 +36,7 @@ public class UserController {
         UserDTO user = userService.findById(id);
         return ResponseEntity.ok(user);
     }
-
+    
     // 사용자 정보 업데이트
     @PutMapping("/{id}/update")
     public ResponseEntity<UserDTO> updateUser(@PathVariable String id, @RequestBody UserDTO userDTO) {

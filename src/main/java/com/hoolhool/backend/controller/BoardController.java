@@ -104,7 +104,11 @@ public class BoardController {
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDTO> getBoardById(@PathVariable Long boardId) {
         try {
+            // 조회수 증가
+            boardService.incrementViews(boardId);
+            
             BoardDTO board = boardService.getBoardById(boardId);
+
             return ResponseEntity.ok(board);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -137,18 +141,6 @@ public class BoardController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    // 게시글 조회수 증가
-    @PutMapping("/{boardId}/views")
-    public ResponseEntity<BoardDTO> incrementViews(@PathVariable Long boardId) {
-        try {
-            BoardDTO updatedBoard = boardService.incrementViews(boardId);
-            return ResponseEntity.ok(updatedBoard);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
         }
     }
 

@@ -25,10 +25,12 @@ public class BoardDTO {
     private LocalDateTime lastSavedAt; // 마지막 임시 저장 시간
     private List<CommentDTO> comments; // 댓글 포함
     private List<ImageDTO> images; // 이미지 포함
+    private String userProfileImage;
+    private String userNickname;
 
     public BoardDTO(Long boardId, String userId, String content, LocalDateTime cDate, 
                     String hashTag, Boolean hidden, String title, Integer view, 
-                    BoardType type, String status, LocalDateTime lastSavedAt) {
+                    BoardType type, String status, LocalDateTime lastSavedAt, String userProfileImage, String userNickname) {
         this.boardId = boardId;
         this.userId = userId;
         this.content = content;
@@ -40,6 +42,8 @@ public class BoardDTO {
         this.type = type;
         this.status = status;
         this.lastSavedAt = lastSavedAt;
+        this.userProfileImage = userProfileImage;
+        this.userNickname = userNickname;
     }
 
     public BoardDTO(Long boardId, String userId, String content, LocalDateTime cDate, 
@@ -142,6 +146,22 @@ public class BoardDTO {
     }
     public void setImages(List<ImageDTO> images) {
         this.images = images;
+    }
+
+    public String getUserProfileImage() {
+        return userProfileImage;
+    }
+
+    public void setUserProfileImage(String userProfileImage) {
+        this.userProfileImage = userProfileImage;
+    }
+
+    public String getUserNickname() {
+        return userNickname;
+    }
+
+    public void setUserNickname(String userNickname) {
+        this.userNickname = userNickname;
     }
     
     
