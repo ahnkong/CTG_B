@@ -48,6 +48,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     //  ID가 있는지 확인
     Optional<User> findByUserId(String userId);
+    // Optional<User> findById(String userId);
+
+
 
 
 

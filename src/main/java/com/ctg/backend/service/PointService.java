@@ -76,6 +76,8 @@ public class PointService {
                 user.getName(), // ✅ 추가
                 user.getEmail(),
                 null, // 비밀번호 제외 (보안)
+                user.getChurchName(),
+                user.getGrade(),
                 user.getInfo(), // ✅ 추가
                 user.getMarketing(), // ✅ 추가
                 user.getTell(), // ✅ 추가
@@ -86,6 +88,7 @@ public class PointService {
                 user.getMbti(), // ✅ 추가
                 user.getPersonal(), // ✅ 추가
                 user.getSocialType() // ✅ 추가
+
         );
     }
 

@@ -112,6 +112,8 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword()); // 사용자 입력 비밀번호 설정
         user.setInfo(userDTO.getInfo());
+        user.setChurchName(userDTO.getChurchName());
+        user.setGrade(userDTO.getGrade());
         user.setTell(userDTO.getTell());
         user.setMarketing(userDTO.getMarketing());
         user.setProfileImage(userDTO.getProfileImage());
@@ -289,6 +291,8 @@ public class UserService {
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getChurchName(),
+                user.getGrade(),
                 user.getInfo(),
                 user.getMarketing(),
                 user.getTell(),

@@ -2,6 +2,9 @@ package com.ctg.backend.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +32,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 특정 댓글에 있는 댓글 갯수 반환
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.board.boardId = :boardId")
     long countCommentsByBoardId(@Param("boardId") Long boardId);
+
+    // // ✅ 특정 유저가 작성한 댓글 찾기
+    List<Comment> findByUserIdOrderByCoCDateDesc(String userId);
+
 }
