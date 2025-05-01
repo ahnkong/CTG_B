@@ -29,6 +29,7 @@ import com.ctg.backend.entity.Board;
 import com.ctg.backend.entity.BoardType;
 import com.ctg.backend.repository.BoardRepository;
 import com.ctg.backend.service.BoardService;
+import com.ctg.backend.service.CommentService;
 import com.ctg.backend.service.ImageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,6 +43,11 @@ public class BoardController {
 
     @Autowired
     private final ImageService imageService;
+
+
+    @Autowired
+    private BoardRepository boardRepository;
+
 
     public BoardController(BoardService boardService, ImageService imageService) {
         this.boardService = boardService;
@@ -193,5 +199,30 @@ public class BoardController {
                     .body("임시 저장 정리 중 오류가 발생했습니다.");
         }
     }
+
+
+    //2025.04.28 게시글, 댓글 조회
+    @GetMapping("/myPosts")
+    public ResponseEntity<Page<BoardDTO>> getMyBoards(
+        @RequestParam String userId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "cDate")); // 여기서 정렬
+            Page<Board> boards = boardRepository.findByUserId(userId, pageable); // 여기 findByUserId
+            Page<BoardDTO> boardDTOs = boards.map(boardService::convertToDTO);
+            return ResponseEntity.ok(boardDTOs);
+        } catch (Exception e) {
+            e.printStackTrace(); // <- e.printStackTrace()는 return 위로 올려야 함
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+
+
     
+
+
 }

@@ -96,4 +96,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             @Param("filterDate") Integer filterDate,
             Pageable pageable
     );
+
+
+    // ✅ 특정 유저가 작성한 게시글 찾기
+    Page<Board> findByUserId(String userId, Pageable pageable);
+
 }

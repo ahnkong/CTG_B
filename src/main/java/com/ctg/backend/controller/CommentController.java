@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ctg.backend.dto.CommentDTO;
+import com.ctg.backend.dto.MyCommentDTO;
 import com.ctg.backend.service.CommentService;
 
 @RestController
@@ -77,6 +80,29 @@ public class CommentController {
     public ResponseEntity<Long> getTotalCommentCount(@PathVariable Long boardId) {
         long totalComments = commentService.countTotalComments(boardId);
         return ResponseEntity.ok(totalComments);
+    }
+
+    
+    //2025.04.28 댓글 리스트 불러오기
+    // @GetMapping("/my-comments")
+    // public ResponseEntity<Page<CommentDTO>> getMyComments(
+    //     @RequestParam String userId,
+    //     Pageable pageable) {
+    //     try {
+    //         Page<Comment> comments = commentRepository.findByUserIdOrderByCoCDateDesc(userId, pageable);
+    //         Page<CommentDTO> commentDTOs = comments.map(commentService::convertToDTO);
+    //         return ResponseEntity.ok(commentDTOs);
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    //     }
+    // }
+
+    @GetMapping("/myComments")
+    public ResponseEntity<List<MyCommentDTO>> getMyComments(
+        @RequestParam String userId
+    ) {
+        List<MyCommentDTO> comments = commentService.getMyComments(userId);
+        return ResponseEntity.ok(comments);
     }
 
 }

@@ -25,6 +25,7 @@ public class ReCommentDTO {
         this.userId = reComment.getUserId();
         this.content = reComment.getContent();
         this.reCDate = reComment.getReCDate();
+        
         // userNickname, userProfileImage, isLiked는 setter로 나중에 설정
     }
 

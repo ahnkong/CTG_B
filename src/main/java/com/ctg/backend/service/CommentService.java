@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ctg.backend.dto.CommentDTO;
+import com.ctg.backend.dto.MyCommentDTO;
 import com.ctg.backend.dto.ReCommentDTO;
 import com.ctg.backend.entity.Board;
 import com.ctg.backend.entity.Comment;
@@ -21,7 +22,10 @@ import com.ctg.backend.repository.LikeRepository;
 import com.ctg.backend.repository.ReCommentRepository;
 import com.ctg.backend.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CommentService {
     
     @Autowired
@@ -116,27 +120,31 @@ public class CommentService {
                     commentDTO.setLiked(isLiked);
 
                     // ✅ 대댓글 리스트 설정 (대댓글의 isLiked 값 추가)
-                    List<ReCommentDTO> reDTOs = comment.getReComments().stream()
-                            .map(re -> {
-                                boolean reLiked = likeRepository
-                                        .findByUser_UserIdAndTypeAndReComment_RecommentId(userId, LikeType.RECOMMENT,
-                                                re.getRecommentId())
-                                        .isPresent();
+                //     List<ReCommentDTO> reDTOs = comment.getReComments().stream()
+                //             .map(re -> {
+                //                 boolean reLiked = likeRepository
+                //                         .findByUser_UserIdAndTypeAndReComment_RecommentId(userId, LikeType.RECOMMENT,
+                //                                 re.getRecommentId())
+                //                         .isPresent();
 
-                                return new ReCommentDTO(
-                                        re.getRecommentId(),
-                                        re.getUserId(),
-                                        re.getComment().getCommentId(),
-                                        re.getContent(),
-                                        re.getReCDate(),
-                                        user.getNickname(),
-                                        user.getProfileImage(),
-                                        reLiked, // ✅ 대댓글 좋아요 상태 추가
-                                        false
-                                );
-                            })
-                            .collect(Collectors.toList());
+                //                 return new ReCommentDTO(
+                //                         re.getRecommentId(),
+                //                         re.getUserId(),
+                //                         re.getComment().getCommentId(),
+                //                         re.getContent(),
+                //                         re.getReCDate(),
+                //                         user.getNickname(),
+                //                         user.getProfileImage(),
+                //                         reLiked, // ✅ 대댓글 좋아요 상태 추가
+                //                         false
+                //                 );
+                //             })
+                //             .collect(Collectors.toList());
 
+                //진짜 자기전 마지막 수정..안되면..다음에 하자 이거 돌려서 해야함!
+                List<ReCommentDTO> reDTOs = comment.getReComments().stream()
+                .map(re -> convertReCommentToDTO(re, userId)) // ← 이 한 줄로 교체!
+                .collect(Collectors.toList());
                     commentDTO.setReComments(reDTOs);
 
                     return commentDTO;
@@ -192,7 +200,7 @@ public class CommentService {
         );
 
         // 3. 유저 정보 세팅
-        User user = userRepository.findById(comment.getUserId())
+        User user = userRepository.findById(comment.getUserId().trim())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + comment.getUserId()));
         dto.setUserNickname(user.getNickname());
         dto.setUserProfileImage(user.getProfileImage());
@@ -210,7 +218,7 @@ public class CommentService {
 
     // 대댓글 엔티티 -> 디티오 변환
     private ReCommentDTO convertReCommentToDTO(ReComment reComment, String userId) {
-        User user = userRepository.findById(reComment.getUserId())
+        User user = userRepository.findById(reComment.getUserId().trim())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + reComment.getUserId()));
 
         boolean isLiked = likeRepository
@@ -245,5 +253,22 @@ public class CommentService {
         );
     }
 
-    
+    // CommentService.java
+
+    public List<MyCommentDTO> getMyComments(String userId) {
+        List<Comment> comments = commentRepository.findByUserIdOrderByCoCDateDesc(userId);
+        return comments.stream()
+                       .map(this::convertToMyCommentDTO)
+                       .collect(Collectors.toList());
+    }
+
+    private MyCommentDTO convertToMyCommentDTO(Comment comment) {
+        return MyCommentDTO.builder()
+            .commentId(comment.getCommentId())
+            .boardId(comment.getBoard().getBoardId())
+            .content(comment.getContent())
+            .createDate(comment.getCoCDate())
+            .build();
+    }
+
 }

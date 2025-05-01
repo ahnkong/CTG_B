@@ -38,6 +38,13 @@ public class User {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "churchName", nullable = true)
+    private String churchName;
+
+
+    @Column(name = "grade", nullable = true)
+    private String grade;
+
     @Column(name = "info")
     private String info;
 

@@ -18,6 +18,8 @@ public class UserDTO {
     private String name;
     private String email;
     private String password;
+    private String churchName;
+    private String grade;
     private String info;
     private Boolean marketing;
     private String tell;
@@ -57,6 +59,19 @@ public class UserDTO {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getChurchName() {
+        return churchName;
+    }
+    public void setChurchName(String churchName) {
+        this.churchName = churchName;
+    }
+    public String getGrade() {
+        return grade;
+    }
+    public void setGrade(String grade) {
+        this.grade = grade;
     }
     public String getInfo() {
         return info;
