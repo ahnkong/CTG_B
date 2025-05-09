@@ -3,7 +3,7 @@ package com.ctg.backend.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.ctg.backend.entity.MBTI;
+
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -27,7 +27,6 @@ public class UserDTO {
     private Long point;
     private LocalDateTime uDate;
     private Boolean isActive;
-    private MBTI mbti;
     private String personal;
     private String socialType; // 소셜 타입 추가 (local, kakao, Google)
     public String getUserId() {
@@ -114,12 +113,6 @@ public class UserDTO {
     }
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
-    }
-    public MBTI getMbti() {
-        return mbti;
-    }
-    public void setMbti(MBTI mbti) {
-        this.mbti = mbti;
     }
     public String getPersonal() {
         return personal;

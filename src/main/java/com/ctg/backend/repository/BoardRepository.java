@@ -27,6 +27,14 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     void incrementViewCount(@Param("boardId") Long boardId);
     
 
+    /* 정렬 */
+    // 조회수 기준 + 타입별 정렬
+    Page<Board> findByTypeOrderByViewDesc(BoardType type, Pageable pageable);
+
+    // BoardType의 게시글에 속한 댓글만 조회
+    @Query("SELECT c FROM Comment c JOIN Board b ON c.board.boardId = b.boardId WHERE b.type = :type AND c.reComments IS EMPTY ORDER BY c.coCDate DESC")
+    Page<Comment> findCommentsByBoardType(BoardType type, Pageable pageable);
+
     // 좋아요 수 기준 게시글 정렬
     @Query("SELECT b FROM Board b LEFT JOIN Like l ON l.board = b WHERE l.type = com.ctg.backend.entity.LikeType.BOARD GROUP BY b ORDER BY COUNT(l) DESC")
     Page<Board> findAllByLikesCount(Pageable pageable);
@@ -47,6 +55,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // 최신순 정렬
     Page<Board> findByOrderByCDateDesc(Pageable pageable);
 
+
+
     // 댓글 조회
     @Query("SELECT c FROM Comment c WHERE c.board.boardId = :boardId ORDER BY c.coCDate DESC")
     Page<Comment> findCommentsByBoardId(Long boardId, Pageable pageable);
@@ -55,12 +65,12 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT i FROM Image i WHERE i.board.boardId = :boardId ORDER BY i.imageOrder")
     List<Image> findImagesByBoardId(Long boardId);
 
-    // 조회수 기준 + 타입별 정렬
-    Page<Board> findByTypeOrderByViewDesc(BoardType type, Pageable pageable);
+    // ✅ [오늘의 게시글] 최신순 정렬용 메서드
+    // type: 게시글 타입 (POSITIVE 또는 NEGATIVE)
+    // cDate: 생성일 기준 내림차순 정렬
+    Page<Board> findAllByType(BoardType type, Pageable pageable);
 
-    // BoardType의 게시글에 속한 댓글만 조회
-    @Query("SELECT c FROM Comment c JOIN Board b ON c.board.boardId = b.boardId WHERE b.type = :type AND c.reComments IS EMPTY ORDER BY c.coCDate DESC")
-    Page<Comment> findCommentsByBoardType(BoardType type, Pageable pageable);
+
 
     /* 임시저장 */
     // 특정 사용자의 DRAFT 상태 게시글 찾기
@@ -100,5 +110,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // ✅ 특정 유저가 작성한 게시글 찾기
     Page<Board> findByUserId(String userId, Pageable pageable);
+
+
 
 }

@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ctg.backend.dto.UserDTO;
-import com.ctg.backend.entity.MBTI;
 import com.ctg.backend.entity.Role;
 import com.ctg.backend.entity.User;
 import com.ctg.backend.repository.UserRepository;
@@ -119,7 +118,6 @@ public class UserService {
         user.setProfileImage(userDTO.getProfileImage());
         user.setPoint(userDTO.getPoint() != null ? userDTO.getPoint() : 0L);
         user.setUDate(userDTO.getuDate() != null ? userDTO.getuDate() : LocalDateTime.now());
-        user.setMbti(userDTO.getMbti()); // 직접 할당
 
         // 기본값 처리
         // 소셜 타입에 따라 local 설정
@@ -159,8 +157,6 @@ public class UserService {
             user.setTell(userDTO.getTell());
         if (userDTO.getProfileImage() != null)
             user.setProfileImage(userDTO.getProfileImage());
-        if (userDTO.getMbti() != null)
-            user.setMbti(userDTO.getMbti()); // Enum 변환
 
         userRepository.save(user);
         return mapToDTO(user);
@@ -300,7 +296,6 @@ public class UserService {
                 user.getPoint(),
                 user.getUDate(),
                 user.getIsActive(),
-                user.getMbti(),
                 user.getPersonal(),
                 null);
     }
