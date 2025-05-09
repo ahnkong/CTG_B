@@ -132,7 +132,7 @@ public class BoardController {
         }
     }
 
-    // 검색 및 정렬된 게시글 조회
+    // 검색 및 정렬된 게시글 조회 -> 인기글 기준
     @GetMapping
     public ResponseEntity<Page<BoardDTO>> getBoards(
         @RequestParam(value = "search", required = false) String search,

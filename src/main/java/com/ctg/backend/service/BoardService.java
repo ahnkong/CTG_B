@@ -93,33 +93,81 @@ public class BoardService {
 
     // 검색 및 정렬된 게시글 반환
     // 검색 + 타입 + 날짜 필터 + 정렬을 한 번에 처리
-    @Transactional(readOnly = true)
-    public Page<BoardDTO> getBoards(String search, Integer filterDate, String sort, String type, Pageable pageable) {
-        Sort sorting = Sort.by(Sort.Direction.DESC, "cDate");
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sorting);
+    // @Transactional(readOnly = true)
+    // public Page<BoardDTO> getBoards(String search, Integer filterDate, String sort, String type, Pageable pageable) {
+    //     Sort sorting = Sort.by(Sort.Direction.DESC, "cDate");
+    //     pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sorting);
     
-        Page<Board> boards;
+    //     Page<Board> boards;
     
-        // 좋아요 순 정렬 (1주일 또는 1달 단위)
-        if ("likesLast7Days".equals(sort) || "likesLast30Days".equals(sort)) {
-            boards = boardRepository.findBoardsOrderByLikeCount(
-                    BoardType.valueOf(type), 
-                    filterDate, 
-                    pageable
-            );
-        } 
-        // 최신순 정렬
-        else if (search != null && !search.isEmpty()) {
-            boards = boardRepository.findByTitleContainingAndType(search, BoardType.valueOf(type), pageable);
-        } 
-        // 조회수 기준 정렬
-        else {
-            boards = boardRepository.findByTypeOrderByViewDesc(BoardType.valueOf(type), pageable);
+    //     // 좋아요 순 정렬 (1주일 또는 1달 단위)
+    //     if ("likesLast7Days".equals(sort) || "likesLast30Days".equals(sort)) {
+    //         boards = boardRepository.findBoardsOrderByLikeCount(
+    //                 BoardType.valueOf(type), 
+    //                 filterDate, 
+    //                 pageable
+    //         );
+    //     } 
+    //     // 최신순 정렬
+    //     else if (search != null && !search.isEmpty()) {
+    //         boards = boardRepository.findByTitleContainingAndType(search, BoardType.valueOf(type), pageable);
+    //     } 
+    //     // 조회수 기준 정렬
+    //     else {
+    //         boards = boardRepository.findByTypeOrderByViewDesc(BoardType.valueOf(type), pageable);
+    //     }
+    
+    //     // Board 엔티티를 BoardDTO로 변환하여 반환
+    //     return boards.map(this::convertToDTO);
+    // }
+        @Transactional(readOnly = true)
+        public Page<BoardDTO> getBoards(String search, Integer filterDate, String sort, String type, Pageable pageable) {
+            Page<Board> boards;
+
+            // ✅ 1. 인기글: 좋아요 기준 정렬
+            if ("likesLast7Days".equals(sort) || "likesLast30Days".equals(sort)) {
+                // ✅ Pageable에서 정렬 제거 (JPQL에서 이미 ORDER BY 사용 중이므로)
+                Pageable unsortedPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.unsorted()
+                );
+            
+                boards = boardRepository.findBoardsOrderByLikeCount(
+                    BoardType.valueOf(type),
+                    filterDate,
+                    unsortedPageable
+                );
+            
+                System.out.println("🔥 인기글 정렬 로직 실행됨");
+
+            } else {
+                // ✅ 2. 오늘의 게시글: 최신순 정렬 적용
+                Pageable sortedPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "cDate") // Board 엔티티의 cDate 기준
+                );
+                boardRepository.findAllByType(BoardType.valueOf(type), sortedPageable);
+                
+
+                // ✅ 2-1. 검색어가 있는 경우 (검색 + 최신순 정렬)
+                if (search != null && !search.isEmpty()) {
+                    boards = boardRepository.findByTitleContainingAndType(
+                            search,
+                            BoardType.valueOf(type),
+                            sortedPageable);
+
+                // ✅ 2-2. 일반 최신글 (검색 없이 최신순)
+                } else {
+                    boards = boardRepository.findAllByType(
+                            BoardType.valueOf(type),
+                            sortedPageable);
+                }
+            }
+
+            return boards.map(this::convertToDTO);
         }
-    
-        // Board 엔티티를 BoardDTO로 변환하여 반환
-        return boards.map(this::convertToDTO);
-    }
 
 
     // 게시글 생성

@@ -73,37 +73,17 @@ public class User {
     @Column(name = "is_active", columnDefinition = "TINYINT DEFAULT 1")
     private Boolean isActive;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "mbti", columnDefinition = "ENUM('INTP', 'INTJ', 'INFP', 'INFJ', 'ISTP', 'ISTJ', 'ISFP', 'ISFJ', 'ENTP', 'ENTJ', 'ENFP', 'ENFJ', 'ESTP', 'ESTJ', 'ESFP', 'ESFJ')")
-    private MBTI mbti;
-
     @Column(name = "personal")
     private String personal;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PointTransaction> pointTransactions;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserPurchase> purchases;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserQuestTransaction> questTransactions;
 
     public String getSocialType() {
         throw new UnsupportedOperationException("Unimplemented method 'getSocialType'");
     }
 
 
-    public Long getPoint() {
-        return point;
-    }
-    
-    public void setPoint(Long point) {
-        this.point = point;
-    }
-    
 
 }
