@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
@@ -19,40 +21,67 @@ import lombok.Setter;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id", nullable = false)
+    @Column(name = "comment_id")
     private Long commentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id", referencedColumnName = "board_id", nullable = false)
-    private Board board;
-
-    @Column(name = "user_id", nullable = false)
-    private String userId;
-
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(name = "co_c_date", nullable = false)
-    private LocalDateTime coCDate;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content_status", nullable = false)
+    private ContentStatus contentStatus = ContentStatus.ACTIVE;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "board_type")
+    private BoardType boardType;
+
+    @Column(name = "board_id")
+    private Long boardId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "community_id")
+    private Community community;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notice_id")
+    private Notice notice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "newsletter_id")
+    private Newsletter newsletter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "video_id")
+    private Video video;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
     private List<ReComment> reComments;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes; // 좋아요 관계 유지
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<Like> likes;
 
     // 좋아요 개수 반환
     public Long getLikeCount() {
         return this.likes != null ? (long) this.likes.size() : 0L;
     }
 
-    public Comment(Long commentId, Board board, String userId, String content, LocalDateTime coCDate) {
+    public Comment(Long commentId, String content, LocalDateTime createdAt, ContentStatus contentStatus, LocalDateTime updatedAt) {
         this.commentId = commentId;
-        this.board = board;
-        this.userId = userId;
         this.content = content;
-        this.coCDate = coCDate;
+        this.createdAt = createdAt;
+        this.contentStatus = contentStatus;
+        this.updatedAt = updatedAt;
     }
-
-    
 }

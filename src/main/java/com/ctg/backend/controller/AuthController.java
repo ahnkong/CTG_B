@@ -19,10 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ctg.backend.dto.LoginRequest;
+import com.ctg.backend.dto.SignUpRequestDTO;
 import com.ctg.backend.dto.UserDTO;
-import com.ctg.backend.entity.User;
 import com.ctg.backend.service.UserService;
-
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -34,8 +33,8 @@ public class AuthController {
 
     // 회원가입
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody UserDTO userDTO) {
-        UserDTO savedUser = userService.saveUser(userDTO);
+    public ResponseEntity<UserDTO> register(@RequestBody SignUpRequestDTO signUpRequest) {
+        UserDTO savedUser = userService.saveUser(signUpRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
@@ -43,9 +42,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            boolean isAuthenticated = userService.validateUser(loginRequest.getUserId(), loginRequest.getPassword());
+            boolean isAuthenticated = userService.validateUser(loginRequest.getEmail(), loginRequest.getPassword());
             if (isAuthenticated) {
-                UserDTO user = userService.findById(loginRequest.getUserId());
+                UserDTO user = userService.findByEmail(loginRequest.getEmail());
 
                 // JWT 생성
                 String token = userService.generateToken(user);
@@ -53,14 +52,14 @@ public class AuthController {
                 // HttpOnly 쿠키에 JWT 저장
                 Cookie cookie = new Cookie("token", token);
                 cookie.setHttpOnly(true);
-                cookie.setSecure(true); // HTTPS에서만 동작
+                cookie.setSecure(true);
                 cookie.setPath("/");
-                cookie.setMaxAge(60 * 60 * 24); // 1일
+                cookie.setMaxAge(60 * 60 * 24);
                 response.addCookie(cookie);
 
                 return ResponseEntity.ok(Map.of(
                         "token", token,
-                        "userId", user.getUserId(),
+                        "email", user.getEmail(),
                         "nickname", user.getNickname()
                 ));
             } else {
@@ -78,27 +77,26 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
-        String token = authorizationHeader.replace("Bearer ", ""); // Bearer 제거
+        String token = authorizationHeader.replace("Bearer ", "");
         if (!userService.validateToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
 
-        String userId = userService.getUserIdFromToken(token); // 토큰에서 사용자 ID 추출
-        return ResponseEntity.ok(Map.of("userId", userId));
+        String email = userService.getEmailFromToken(token);
+        return ResponseEntity.ok(Map.of("email", email));
     }
 
     // 비밀번호 재설정
     @PostMapping("/resetPassword")
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
-        String id = request.get("id");
-        String name = request.get("name");
         String email = request.get("email");
+        String name = request.get("name");
         String newPassword = request.get("newPassword");
 
-        boolean isValid = userService.validateUserInfo(name, id, email);
+        boolean isValid = userService.validateUserInfo(name, email);
         Map<String, String> response = new HashMap<>();
         if (isValid) {
-            boolean isUpdated = userService.updatePassword(id, newPassword);
+            boolean isUpdated = userService.updatePasswordByEmail(email, newPassword);
             if (isUpdated) {
                 response.put("message", "비밀번호가 성공적으로 변경되었습니다.");
             } else {
@@ -110,19 +108,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/checkId")
-    public ResponseEntity<Boolean> checkId(@RequestParam("userId") String userId) {
-        boolean exists = userService.existsById(userId);
-        return ResponseEntity.ok(!exists); // true: 사용 가능, false: 사용 중
-    }
-
-    @GetMapping("/checkMail")
+    @GetMapping("/checkEmail")
     public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(!exists); // true: 사용 가능, false: 사용 중
     }
 
-    @GetMapping("/checkNickName")
+    @GetMapping("/checkNickname")
     public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
         boolean exists = userService.existsByNickname(nickname);
         return ResponseEntity.ok(!exists); // true: 사용 가능, false: 사용 중

@@ -1,6 +1,7 @@
 package com.ctg.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,22 +38,23 @@ public class ReCommentController {
     @PutMapping("/{reCommentId}")
     public ResponseEntity<ReCommentDTO> updateReComment(
             @PathVariable Long reCommentId,
-            @RequestParam String userId,
-            @RequestBody String content) {
+            @RequestParam Long userId,
+            @RequestBody Map<String, String> body) {
+        String content = body.get("content");
         ReCommentDTO updatedReComment = reCommentService.updateReComment(reCommentId, content, userId);
-        return ResponseEntity.ok(updatedReComment);
+        return ResponseEntity.ok(updatedReComment); 
     }
 
     // 대댓글 삭제
     @DeleteMapping("/{reCommentId}")
-    public ResponseEntity<String> deleteReComment(@PathVariable Long reCommentId) {
-        reCommentService.deleteReComment(reCommentId);
+    public ResponseEntity<String> deleteReComment(@PathVariable Long reCommentId, @RequestParam Long userId) {
+        reCommentService.deleteReComment(reCommentId, userId);
         return ResponseEntity.ok("대댓글이 삭제되었습니다.");
     }
 
     // 특정 댓글의 대댓글 조회
     @GetMapping("/by-comment/{commentId}")
-    public ResponseEntity<List<ReCommentDTO>> getReCommentsByCommentId(@PathVariable Long commentId, @RequestParam(required = false) String userId) {
+    public ResponseEntity<List<ReCommentDTO>> getReCommentsByCommentId(@PathVariable Long commentId, @RequestParam(required = false) Long userId) {
         List<ReCommentDTO> reComments = reCommentService.getReCommentsByCommentId(commentId, userId);
         return ResponseEntity.ok(reComments);
     }

@@ -1,138 +1,166 @@
 package com.ctg.backend.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
-
+import java.util.Date;
+import com.ctg.backend.entity.UserRole;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-
-
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private String userId;
-    private String nickname;
-    private String name;
+    private Long userId;
     private String email;
-    private String password;
-    private String churchName;
-    private String grade;
-    private String info;
-    private Boolean marketing;
+    private String name;
+    private Date birth;
+    private String nickname;
     private String tell;
+    private String info;
+    private Integer local;
     private String profileImage;
-    private Long point;
-    private LocalDateTime uDate;
+    private LocalDateTime createdAt;
     private Boolean isActive;
-    private String personal;
-    private String socialType; // 소셜 타입 추가 (local, kakao, Google)
-    public String getUserId() {
+    private UserRole role;
+    private Long domainId;
+    private String domainName;
+    private Boolean agreeToTerms;
+    private Boolean agreeToMarketing;
+    private LocalDateTime updatedAt;
+
+    public Long getUserId() {
         return userId;
     }
-    public void setUserId(String userId) {
+
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
-    public String getNickname() {
-        return nickname;
-    }
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
+
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
+
+    public String getName() {
+        return name;
     }
 
-    public String getChurchName() {
-        return churchName;
+    public void setName(String name) {
+        this.name = name;
     }
-    public void setChurchName(String churchName) {
-        this.churchName = churchName;
+
+    public Date getBirth() {
+        return birth;
     }
-    public String getGrade() {
-        return grade;
+
+    public void setBirth(Date birth) {
+        this.birth = birth;
     }
-    public void setGrade(String grade) {
-        this.grade = grade;
+
+    public String getNickname() {
+        return nickname;
     }
-    public String getInfo() {
-        return info;
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
-    public void setInfo(String info) {
-        this.info = info;
-    }
-    public Boolean getMarketing() {
-        return marketing;
-    }
-    public void setMarketing(Boolean marketing) {
-        this.marketing = marketing;
-    }
+
     public String getTell() {
         return tell;
     }
+
     public void setTell(String tell) {
         this.tell = tell;
     }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    public Integer getLocal() {
+        return local;
+    }
+
+    public void setLocal(Integer local) {
+        this.local = local;
+    }
+
     public String getProfileImage() {
         return profileImage;
     }
+
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
-    public Long getPoint() {
-        return point;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-    public void setPoint(Long point) {
-        this.point = point;
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
-    public LocalDateTime getuDate() {
-        return uDate;
-    }
-    public void setuDate(LocalDateTime uDate) {
-        this.uDate = uDate;
-    }
+
     public Boolean getIsActive() {
         return isActive;
     }
+
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
-    public String getPersonal() {
-        return personal;
-    }
-    public void setPersonal(String personal) {
-        this.personal = personal;
-    }
-    public String getSocialType() {
-        return socialType;
-    }
-    public void setSocialType(String socialType) {
-        this.socialType = socialType;
+
+    public UserRole getRole() {
+        return role;
     }
 
-    
-    
-    
-    
-    
-    
-    
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
 
+    public Long getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(Long domainId) {
+        this.domainId = domainId;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+
+    public Boolean getAgreeToTerms() {
+        return agreeToTerms;
+    }
+
+    public void setAgreeToTerms(Boolean agreeToTerms) {
+        this.agreeToTerms = agreeToTerms;
+    }
+
+    public Boolean getAgreeToMarketing() {
+        return agreeToMarketing;
+    }
+
+    public void setAgreeToMarketing(Boolean agreeToMarketing) {
+        this.agreeToMarketing = agreeToMarketing;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

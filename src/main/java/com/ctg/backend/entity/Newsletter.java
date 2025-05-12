@@ -1,26 +1,33 @@
 package com.ctg.backend.entity;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
-@Table(name = "recomment")
+@Table(name = "newsletter")
 @Getter
 @Setter
-public class ReComment {
+public class Newsletter {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "recommnet_id")
-    private Long recommentId;
+    @Column(name = "board_id")
+    private Long boardId;
+
+    @Column
+    private String title;
 
     @Column(columnDefinition = "TEXT")
     private String content;
+
+    @Column
+    private Integer view = 0;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -35,13 +42,19 @@ public class ReComment {
     private ContentStatus contentStatus = ContentStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id", nullable = false)
-    private Comment comment;
+    @JoinColumn(name = "domain_id", nullable = false)
+    private Domain domain;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "reComment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "newsletter", cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "newsletter", cascade = CascadeType.ALL)
+    private List<Image> images;
+
+    @OneToMany(mappedBy = "newsletter", cascade = CascadeType.ALL)
     private List<Like> likes;
-}
+} 

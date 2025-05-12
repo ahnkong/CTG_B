@@ -1,6 +1,11 @@
 package com.ctg.backend.entity;
 
 import javax.persistence.*;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,81 +14,73 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import com.ctg.backend.entity.Role;
+
 @Entity
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private Long userId;
 
-    @Column(name = "nickname", nullable = false)
-    private String nickname;
-
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "email", nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column
     private String password;
 
-    @Column(name = "birth")
+    @Column(nullable = false)
+    private String name;
+
+    @Column
     private Date birth;
 
-    @Column(name = "gender")
-    private String gender;
+    @Column
+    private String nickname;
 
-    @Column(name = "churchName", nullable = true)
-    private String churchName;
-
-
-    @Column(name = "grade", nullable = true)
-    private String grade;
-
-    @Column(name = "info")
-    private String info;
-
-    @Column(name = "marketing")
-    private Boolean marketing;
-
-    @Column(name = "local", columnDefinition = "INTEGER DEFAULT 1")
-    private Integer local;
-
-    @Column(name = "tell", nullable = false)
+    @Column
     private String tell;
 
-    @Column(name = "profileimage")
+    @Column
+    private String info;
+
+    @Column(nullable = false)
+    private Integer local; // 1=로컬, 2=구글, 3=네이버, 4=카카오
+
+    @Column
+    private String providerId; //OAuth provider에서 내려주는 고유 id
+
+    @Column
     private String profileImage;
 
-    @Column(name = "point", columnDefinition = "BIGINT DEFAULT 0")
-    private Long point;
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "u_date", nullable = false)
-    private LocalDateTime uDate;
+    @Column(nullable = false)
+    private Boolean isActive = true;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "ENUM('USER', 'ADMIN') DEFAULT 'USER'")
-    private Role role;
+    @Column(nullable = false)
+    private Role role = Role.USER;
 
-    @Column(name = "is_active", columnDefinition = "TINYINT DEFAULT 1")
-    private Boolean isActive;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "domain_id")
+    private Domain domain;
 
-    @Column(name = "personal")
-    private String personal;
+    @Column(nullable = false)
+    private Boolean agreeToTerms = false;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes;
+    @Column(nullable = false)
+    private Boolean agreeToMarketing = false;
 
-
-    public String getSocialType() {
-        throw new UnsupportedOperationException("Unimplemented method 'getSocialType'");
-    }
-
-
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
 }

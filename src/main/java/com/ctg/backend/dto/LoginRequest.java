@@ -1,16 +1,16 @@
 package com.ctg.backend.dto;
 
 public class LoginRequest {
-    private String userId;
+    private String email;
     private String password;
 
     // Getter and Setter
-    public String getUserId() {
-        return userId;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {

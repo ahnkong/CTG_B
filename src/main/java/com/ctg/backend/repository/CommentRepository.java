@@ -7,33 +7,50 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+import com.ctg.backend.entity.BoardType;
 import com.ctg.backend.entity.Comment;
 
+@Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    
-    // 특정 게시글에 속한 댓글 조회
-    List<Comment> findByBoard_BoardId(Long boardId);
-
-    // 특정 사용자가 작성한 댓글 조회
-    List<Comment> findByUserId(String userId);
-
-    // 특정 댓글 내용 검색 (키워드 포함)
-    @Query("SELECT c FROM Comment c WHERE c.content LIKE %:keyword%")
-    List<Comment> searchCommentsByKeyword(@Param("keyword") String keyword);
-
-    // 댓글 삭제 (특정 게시글의 모든 댓글 삭제)
-    void deleteByBoard_BoardId(Long boardId);
 
     // 특정 댓글에 속한 대댓글만 조회
     List<Comment> findByReComments_RecommentId(Long recommentId);
 
-    // 특정 댓글에 있는 댓글 갯수 반환
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.board.boardId = :boardId")
-    long countCommentsByBoardId(@Param("boardId") Long boardId);
+    // 특정 게시글의 댓글 수 반환 (활성화된 댓글만)
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.boardType = :boardType AND c.boardId = :boardId AND c.contentStatus = 'ACTIVE'")
+    long countCommentsByBoardTypeAndBoardId(@Param("boardType") BoardType boardType, @Param("boardId") Long boardId);
 
-    // // ✅ 특정 유저가 작성한 댓글 찾기
-    List<Comment> findByUserIdOrderByCoCDateDesc(String userId);
+    // 특정 게시글의 활성화된 댓글만 조회
+    @Query("SELECT c FROM Comment c WHERE c.boardType = :boardType AND c.boardId = :boardId AND c.contentStatus = 'ACTIVE'")
+    List<Comment> findActiveCommentsByBoardTypeAndBoardId(
+        @Param("boardType") BoardType boardType,
+        @Param("boardId") Long boardId
+    );
 
+    // 특정 사용자의 활성화된 댓글만 조회 (생성일 기준 내림차순)
+    @Query("SELECT c FROM Comment c WHERE c.user.userId = :userId AND c.contentStatus = 'ACTIVE' ORDER BY c.createdAt DESC")
+    List<Comment> findActiveCommentsByUserId(@Param("userId") Long userId);
+
+    // 활성화된 댓글만 검색
+    @Query("SELECT c FROM Comment c WHERE c.content LIKE %:keyword% AND c.contentStatus = 'ACTIVE'")
+    List<Comment> searchActiveCommentsByKeyword(@Param("keyword") String keyword);
+
+    // 특정 게시글의 모든 댓글을 DELETED 상태로 변경
+    @Modifying
+    @Query("UPDATE Comment c SET c.contentStatus = 'DELETED', c.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE c.boardType = :boardType AND c.boardId = :boardId AND c.contentStatus = 'ACTIVE'")
+    void markCommentsAsDeletedByBoardTypeAndBoardId(
+        @Param("boardType") BoardType boardType,
+        @Param("boardId") Long boardId
+    );
+
+    // 특정 댓글을 DELETED 상태로 변경
+    @Modifying
+    @Query("UPDATE Comment c SET c.contentStatus = 'DELETED', c.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE c.commentId = :commentId AND c.contentStatus = 'ACTIVE'")
+    void markCommentAsDeleted(@Param("commentId") Long commentId);
 }

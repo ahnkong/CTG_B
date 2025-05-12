@@ -28,13 +28,13 @@ public class LikeController {
     // 좋아요 클릭, 취소
     @PatchMapping("/{type}/{id}")
     public ResponseEntity<String> toggleLike(
-            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
+            @PathVariable LikeType type,
             @PathVariable Long id,
-            @RequestBody Map<String, String> requestBody) {
+            @RequestBody Map<String, Long> requestBody) {
         
-        String userId = requestBody.get("userId");
+        Long userId = requestBody.get("userId");
 
-        if (userId == null || userId.isEmpty()) {
+        if (userId == null) {
             return ResponseEntity.badRequest().body("User ID is required");
         }
 
@@ -45,9 +45,9 @@ public class LikeController {
     // 좋아요 상태 확인
     @GetMapping("/{type}/{id}/status")
     public ResponseEntity<Boolean> isLiked(
-            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
+            @PathVariable LikeType type,
             @PathVariable Long id,
-            @RequestParam String userId) {
+            @RequestParam Long userId) {
         boolean isLiked = likeService.isLikedByUser(userId, type, id);
         return ResponseEntity.ok(isLiked);
     }
@@ -55,7 +55,7 @@ public class LikeController {
     // 좋아요 개수 조회
     @GetMapping("/{type}/{id}/count")
     public ResponseEntity<Long> getLikeCount(
-            @PathVariable LikeType type, // type을 LikeType Enum으로 변경
+            @PathVariable LikeType type,
             @PathVariable Long id) {
         long count = likeService.countLikes(type, id);
         return ResponseEntity.ok(count);

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ctg.backend.dto.CommentDTO;
 import com.ctg.backend.dto.MyCommentDTO;
+import com.ctg.backend.entity.BoardType;
 import com.ctg.backend.service.CommentService;
 
 @RestController
@@ -32,54 +33,100 @@ public class CommentController {
 
     // 댓글 생성
     @PostMapping
-    public ResponseEntity<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
-        CommentDTO createdComment = commentService.createComment(commentDTO);
+    public ResponseEntity<CommentDTO> createComment(
+            @RequestBody CommentDTO commentDTO,
+            @RequestParam Long userId) {
+        try {
+            CommentDTO createdComment = commentService.createComment(commentDTO, userId);
         return ResponseEntity.ok(createdComment);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // 댓글 수정
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(
             @PathVariable Long commentId,
-            @RequestBody Map<String, String> payload) { // JSON으로 받기
-        String content = payload.get("content"); // "content" 키 값만 추출
-        CommentDTO updatedComment = commentService.updateComment(commentId, content);
+            @RequestBody CommentDTO commentDTO) {
+        try {
+            CommentDTO updatedComment = commentService.updateComment(commentId, commentDTO);
         return ResponseEntity.ok(updatedComment);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 (ContentStatus를 DELETED로 변경)
     @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(@PathVariable Long commentId) {
+        try {
         commentService.deleteComment(commentId);
         return ResponseEntity.ok("댓글이 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 삭제 중 오류가 발생했습니다.");
+        }
     }
 
-    // 특정 게시글의 댓글 조회
-    @GetMapping("/by-board/{boardId}")
-    public ResponseEntity<List<CommentDTO>> getCommentsByBoardId(@PathVariable Long boardId, @RequestParam String userId) {
-        List<CommentDTO> comments = commentService.getCommentsByBoardId(boardId, userId);
-        return ResponseEntity.ok(comments); // 댓글과 대댓글 포함 리스트 반환
+    // 특정 게시글의 댓글 조회 (게시글 타입 포함)
+    @GetMapping("/board/{boardType}/{boardId}")
+    public ResponseEntity<List<CommentDTO>> getCommentsByBoard(
+            @PathVariable BoardType boardType,
+            @PathVariable Long boardId,
+            @RequestParam Long userId) {
+        try {
+            List<CommentDTO> comments = commentService.getCommentsByBoard(boardType, boardId, userId);
+            return ResponseEntity.ok(comments);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // 특정 사용자가 작성한 댓글 조회
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<List<CommentDTO>> getCommentsByUserId(@PathVariable String userId) {
+    public ResponseEntity<List<CommentDTO>> getCommentsByUserId(@PathVariable Long userId) {
+        try {
         List<CommentDTO> comments = commentService.getCommentsByUserId(userId);
         return ResponseEntity.ok(comments);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // 댓글 검색
     @GetMapping("/search")
     public ResponseEntity<List<CommentDTO>> searchComments(@RequestParam String keyword) {
+        try {
         List<CommentDTO> comments = commentService.searchComments(keyword);
         return ResponseEntity.ok(comments);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     // 특정 게시글의 전체 댓글 수 반환 (댓글 수 + 대댓글 수)
-    @GetMapping("/count/{boardId}")
-    public ResponseEntity<Long> getTotalCommentCount(@PathVariable Long boardId) {
-        long totalComments = commentService.countTotalComments(boardId);
+    @GetMapping("/count/{boardType}/{boardId}")
+    public ResponseEntity<Long> getTotalCommentCount(
+            @PathVariable BoardType boardType,
+            @PathVariable Long boardId) {
+        try {
+            long totalComments = commentService.countTotalComments(boardType, boardId);
         return ResponseEntity.ok(totalComments);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     
@@ -99,10 +146,16 @@ public class CommentController {
 
     @GetMapping("/myComments")
     public ResponseEntity<List<MyCommentDTO>> getMyComments(
-        @RequestParam String userId
+        @RequestParam Long userId
     ) {
+        try {
         List<MyCommentDTO> comments = commentService.getMyComments(userId);
         return ResponseEntity.ok(comments);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
 }

@@ -3,7 +3,9 @@ package com.ctg.backend.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.ctg.backend.entity.BoardType;
 import com.ctg.backend.entity.Comment;
+import com.ctg.backend.entity.ContentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -12,64 +14,39 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CommentDTO {
     private Long commentId;
-    private String userId;
-    private Long boardId;
     private String content;
-    private LocalDateTime coCDate;
-    private List<ReCommentDTO> reComments; // 대댓글 포함
+    private LocalDateTime createdAt;
+    private ContentStatus contentStatus;
+    private LocalDateTime updatedAt;
+    private BoardType boardType;
+    private Long boardId;
+    private Long userId;
     private String userNickname;
     private String userProfileImage;
+    private List<ReCommentDTO> reComments;
+    private Long likeCount;
     private boolean isLiked;
     private boolean isEdited;
-    
-    
+
     public CommentDTO(Comment comment) {
         this.commentId = comment.getCommentId();
-        this.userId = comment.getUserId();
-        this.boardId = comment.getBoard().getBoardId(); // Board 객체에서 ID 가져옴
         this.content = comment.getContent();
-        this.coCDate = comment.getCoCDate();
-        // 이 시점엔 reComments는 setReComments(...)로 따로 세팅해줄 거니까 생략
-    }
-    
-    public CommentDTO(Long commentId, String userId, Long boardId, String content,
-            LocalDateTime coCDate, List<ReCommentDTO> reComments, boolean isLiked, boolean isEdited) {
-        this.commentId = commentId;
-        this.userId = userId;
-        this.boardId = boardId;
-        this.content = content;
-        this.coCDate = coCDate;
-        this.reComments = reComments;
-        this.isLiked = isLiked; // ✅ isLiked 추가
-        this.isEdited = isEdited;
+        this.createdAt = comment.getCreatedAt();
+        this.contentStatus = comment.getContentStatus();
+        this.updatedAt = comment.getUpdatedAt();
+        this.boardType = comment.getBoardType();
+        this.boardId = comment.getBoardId();
+        this.userId = comment.getUser().getUserId();
+        this.userNickname = comment.getUser().getNickname();
+        this.userProfileImage = comment.getUser().getProfileImage();
+        this.likeCount = comment.getLikeCount();
     }
 
-    public CommentDTO(Long commentId, String userId, Long boardId, String content, LocalDateTime coCDate,
-            List<ReCommentDTO> reComments) {
-        this.commentId = commentId;
-        this.userId = userId;
-        this.boardId = boardId;
-        this.content = content;
-        this.coCDate = coCDate;
-        this.reComments = reComments;
-    }
     public Long getCommentId() {
         return commentId;
     }
     public void setCommentId(Long commentId) {
         this.commentId = commentId;
-    }
-    public String getUserId() {
-        return userId;
-    }
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-    public Long getBoardId() {
-        return boardId;
-    }
-    public void setBoardId(Long boardId) {
-        this.boardId = boardId;
     }
     public String getContent() {
         return content;
@@ -77,17 +54,41 @@ public class CommentDTO {
     public void setContent(String content) {
         this.content = content;
     }
-    public LocalDateTime getCoCDate() {
-        return coCDate;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-    public void setCoCDate(LocalDateTime coCDate) {
-        this.coCDate = coCDate;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
-    public List<ReCommentDTO> getReComments() {
-        return reComments;
+    public ContentStatus getContentStatus() {
+        return contentStatus;
     }
-    public void setReComments(List<ReCommentDTO> reComments) {
-        this.reComments = reComments;
+    public void setContentStatus(ContentStatus contentStatus) {
+        this.contentStatus = contentStatus;
+    }
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    public BoardType getBoardType() {
+        return boardType;
+    }
+    public void setBoardType(BoardType boardType) {
+        this.boardType = boardType;
+    }
+    public Long getBoardId() {
+        return boardId;
+    }
+    public void setBoardId(Long boardId) {
+        this.boardId = boardId;
+    }
+    public Long getUserId() {
+        return userId;
+    }
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
     public String getUserNickname() {
         return userNickname;
@@ -101,21 +102,28 @@ public class CommentDTO {
     public void setUserProfileImage(String userProfileImage) {
         this.userProfileImage = userProfileImage;
     }
+    public List<ReCommentDTO> getReComments() {
+        return reComments;
+    }
+    public void setReComments(List<ReCommentDTO> reComments) {
+        this.reComments = reComments;
+    }
+    public Long getLikeCount() {
+        return likeCount;
+    }
+    public void setLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
+    }
     public boolean isLiked() {
         return isLiked;
     }
     public void setLiked(boolean isLiked) {
         this.isLiked = isLiked;
     }
-
     public boolean isEdited() {
         return isEdited;
     }
-
     public void setEdited(boolean isEdited) {
         this.isEdited = isEdited;
     }
-    
-    
-
 }

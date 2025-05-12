@@ -21,9 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ctg.backend.dto.UserDTO;
+import com.ctg.backend.dto.SignUpRequestDTO;
 import com.ctg.backend.entity.Role;
 import com.ctg.backend.entity.User;
+import com.ctg.backend.entity.Domain;
 import com.ctg.backend.repository.UserRepository;
+import com.ctg.backend.repository.DomainRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -39,8 +42,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    @Autowired
+    private DomainRepository domainRepository;
+
+    private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성
@@ -50,12 +56,12 @@ public class UserService {
     }
 
     // JWT 생성
-    public String generateToken(UserDTO userDTO) {
+    public String generateToken(UserDTO user) {
         return Jwts.builder()
-                .setSubject(userDTO.getUserId())
-                .claim("nickname", userDTO.getNickname())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1일 유효
+                .setSubject(user.getEmail())
+                .claim("email", user.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24시간
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -74,76 +80,66 @@ public class UserService {
     }
 
     // JWT에서 사용자 ID 추출
-    public String getUserIdFromToken(String token) {
+    public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return Long.parseLong(claims.getSubject());
     }
 
     // 사용자 저장 (회원가입)
-    public UserDTO saveUser(UserDTO userDTO) {
-        if (existsById(userDTO.getUserId())) {
-            throw new IllegalArgumentException("ID already exists");
-        }
-        if (existsByEmail(userDTO.getEmail())) {
+    public UserDTO saveUser(SignUpRequestDTO signUpRequest) {
+        if (existsByEmail(signUpRequest.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
-        if (existsByNickname(userDTO.getNickname())) {
+        if (existsByNickname(signUpRequest.getNickname())) {
             throw new IllegalArgumentException("Nickname already exists");
         }
-        if (existsByTell(userDTO.getTell())) {
+        if (existsByTell(signUpRequest.getTell())) {
             throw new IllegalArgumentException("Tell already exists");
         }
 
         // 비밀번호 유효성 검사
-        if (userDTO.getPassword() == null || userDTO.getPassword().isEmpty()) {
+        if (signUpRequest.getPassword() == null || signUpRequest.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password is required");
+        }
+
+        // 교회명으로 Domain 찾기 (없으면 null)
+        Domain domain = null;
+        if (signUpRequest.getChurchName() != null && !signUpRequest.getChurchName().isEmpty()) {
+            domain = domainRepository.findByDomainName(signUpRequest.getChurchName()).orElse(null);
         }
 
         // DTO를 엔티티로 변환
         User user = new User();
-        user.setUserId(userDTO.getUserId());
-        user.setNickname(userDTO.getNickname());
-        user.setName(userDTO.getName());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword()); // 사용자 입력 비밀번호 설정
-        user.setInfo(userDTO.getInfo());
-        user.setChurchName(userDTO.getChurchName());
-        user.setGrade(userDTO.getGrade());
-        user.setTell(userDTO.getTell());
-        user.setMarketing(userDTO.getMarketing());
-        user.setProfileImage(userDTO.getProfileImage());
-        user.setPoint(userDTO.getPoint() != null ? userDTO.getPoint() : 0L);
-        user.setUDate(userDTO.getuDate() != null ? userDTO.getuDate() : LocalDateTime.now());
-
-        // 기본값 처리
-        // 소셜 타입에 따라 local 설정
-        if ("KAKAO".equalsIgnoreCase(userDTO.getSocialType()) || "GOOGLE".equalsIgnoreCase(userDTO.getSocialType())) {
-            user.setLocal(0); // 소셜 가입
-        } else {
-            user.setLocal(1); // 자체 가입
-        }
-        user.setRole(Role.USER); // 기본값 설정
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(signUpRequest.getPassword());
+        user.setName(signUpRequest.getName());
+        user.setBirth(signUpRequest.getBirth());
+        user.setNickname(signUpRequest.getNickname());
+        user.setTell(signUpRequest.getTell());
         user.setIsActive(true);
+        user.setRole(Role.USER);
+        user.setLocal(signUpRequest.getLocal());
+        user.setAgreeToTerms(signUpRequest.getAgreeToTerms());
+        user.setAgreeToMarketing(signUpRequest.getAgreeToMarketing());
+        user.setDomain(domain); // Domain 설정 (null 가능)
 
         // 저장
         User savedUser = userRepository.save(user);
-
-        // 엔티티 -> DTO 변환
         return mapToDTO(savedUser);
     }
 
     // 사용자 조회
-    public UserDTO findById(String id) {
+    public UserDTO findById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
         return mapToDTO(user);
     }
 
     // 마이페이지 프로필 수정 후 업데이트
-    public UserDTO updateUser(String userId, UserDTO userDTO) {
+    public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // 업데이트할 필드 설정
@@ -151,8 +147,6 @@ public class UserService {
             user.setNickname(userDTO.getNickname());
         if (userDTO.getInfo() != null)
             user.setInfo(userDTO.getInfo());
-        if (userDTO.getPassword() != null)
-            user.setPassword(userDTO.getPassword());
         if (userDTO.getTell() != null)
             user.setTell(userDTO.getTell());
         if (userDTO.getProfileImage() != null)
@@ -162,51 +156,41 @@ public class UserService {
         return mapToDTO(user);
     }
 
-    // 비밀번호 변경
-    public boolean validateUserInfo(String name, String userId, String email) {
-        return userRepository.findByUserIdAndNameAndEmail(userId, name, email).isPresent();
+    // 비밀번호 변경을 위한 사용자 정보 검증
+    public boolean validateUserInfo(String name, String email) {
+        return userRepository.findByNameAndEmail(name, email).isPresent();
     }
 
-    // 비밀번호 변경
+    // 이메일로 비밀번호 변경
     @Transactional
-    public boolean updatePassword(String id, String newPassword) {
-        Optional<User> userOptional = userRepository.findById(id);
+    public boolean updatePasswordByEmail(String email, String newPassword) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
         
         if (userOptional.isEmpty()) {
-            System.out.println("❌ 비밀번호 변경 실패: 사용자 ID " + id + " 를 찾을 수 없음");
-            return false; // 유저를 찾을 수 없음
+            return false;
         }
     
         User user = userOptional.get();
-        System.out.println("✅ 기존 비밀번호: " + user.getPassword()); // 기존 비밀번호 확인
-        user.setPassword(newPassword); // 🔥 새 비밀번호 설정
-        userRepository.save(user); // 🔥 변경된 정보 저장
-    
-        System.out.println("✅ 비밀번호 변경 완료! 새로운 비밀번호: " + user.getPassword());
+        user.setPassword(newPassword);
+        userRepository.save(user);
         return true;
     }
-    
-
-    // 비밀번호 변경
-    // 비밀번호 변경 (암호화 X)
-    // public boolean updatePassword(String id, String newPassword) {
-    // Optional<User> user = userRepository.findById(id);
-    // if (user.isPresent()) {
-    // user.get().setPassword(newPassword); // 🔥 암호화 없이 그대로 저장
-    // userRepository.save(user.get());
-    // return true;
-    // }
-    // return false;
-    // }
 
     // 사용자 ID와 비밀번호 검증
-    public boolean validateUser(String userId, String password) {
-        Optional<User> user = userRepository.findById(userId);
+    public boolean validateUser(String email, String password) {
+        Optional<User> user = userRepository.findByEmail(email);
         return user.isPresent() && user.get().getPassword().equals(password);
     }
 
+    // 이메일로 사용자 찾기
+    public UserDTO findByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return mapToDTO(user);
+    }
+
     // 프로필 사진 저장
-    public String saveProfilePicture(String userId, MultipartFile file) throws IOException {
+    public String saveProfilePicture(Long userId, MultipartFile file) throws IOException {
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -248,7 +232,7 @@ public class UserService {
     }
 
     // 프로필 이미지 삭제
-    public void deleteProfilePicture(String userId) {
+    public void deleteProfilePicture(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -257,11 +241,6 @@ public class UserService {
 
         // 사용자 데이터베이스 업데이트
         userRepository.save(user);
-    }
-
-    // ID 중복 확인
-    public boolean existsById(String userId) {
-        return userRepository.existsById(userId);
     }
 
     // 이메일 중복 확인
@@ -281,33 +260,38 @@ public class UserService {
 
     // 엔티티 -> DTO 변환
     private UserDTO mapToDTO(User user) {
-        return new UserDTO(
-                user.getUserId(),
-                user.getNickname(),
-                user.getName(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getChurchName(),
-                user.getGrade(),
-                user.getInfo(),
-                user.getMarketing(),
-                user.getTell(),
-                user.getProfileImage(),
-                user.getPoint(),
-                user.getUDate(),
-                user.getIsActive(),
-                user.getPersonal(),
-                null);
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setNickname(user.getNickname());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setInfo(user.getInfo());
+        dto.setTell(user.getTell());
+        dto.setProfileImage(user.getProfileImage());
+        dto.setIsActive(user.getIsActive());
+        dto.setLocal(user.getLocal());
+        dto.setBirth(user.getBirth());
+        dto.setAgreeToTerms(user.getAgreeToTerms());
+        dto.setAgreeToMarketing(user.getAgreeToMarketing());
+        dto.setUpdatedAt(user.getUpdatedAt());
+        
+        // Domain 정보 설정
+        if (user.getDomain() != null) {
+            dto.setDomainId(user.getDomain().getDomainId());
+            dto.setDomainName(user.getDomain().getDomainName());
+        }
+        
+        return dto;
     }
 
-    // 아이디 찾기
-    public String findId(String name, String tell, String mail) {
-        Optional<User> user = userRepository.findByNameAndTellAndEmail(name, tell, mail);
-        return user.map(User::getUserId).orElse("일치하는 사용자가 없습니다.");
+    // 이메일 찾기
+    public String findEmail(String name, String tell) {
+        Optional<User> user = userRepository.findByNameAndTell(name, tell);
+        return user.map(User::getEmail).orElse("일치하는 사용자가 없습니다.");
     }
 
     // 비밀번호 확인 메서드 (마이페이지내 프로필 수정 시 비밀번호 확인 구문)
-    public boolean checkPassword(String id, String password) {
+    public boolean checkPassword(Long id, String password) {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             return false; // 사용자 없음
@@ -316,7 +300,7 @@ public class UserService {
     }
 
     // 자기소개 수정 메서드
-    public boolean updateUserInfo(String userId, String newInfo) {
+    public boolean updateUserInfo(Long userId, String newInfo) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -329,11 +313,41 @@ public class UserService {
 
     // ✅ 마케팅 동의 여부 업데이트 메서드 추가
     @Transactional
-    public boolean updateMarketing(String userId, boolean marketing) {
+    public boolean updateMarketing(Long userId, boolean marketing) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        userRepository.updateMarketing(userId, marketing);
+        user.setAgreeToMarketing(marketing);
+        userRepository.save(user);
         return marketing;
+    }
+
+    // 비밀번호 업데이트
+    @Transactional
+    public boolean updatePassword(Long userId, String newPassword) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+    
+        User user = userOptional.get();
+        user.setPassword(newPassword);
+        userRepository.save(user);
+        return true;
+    }
+
+    // 토큰에서 이메일 추출
+    public String getEmailFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.get("email", String.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token");
+        }
     }
 }

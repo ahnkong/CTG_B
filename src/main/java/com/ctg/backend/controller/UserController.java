@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ctg.backend.dto.UserDTO;
 import com.ctg.backend.service.UserService;
 
-
 @RestController
 @RequestMapping("/api/v1/user")
 @CrossOrigin(origins = { "http://localhost:3000", "http://192.168.0.7:3000" })
@@ -32,14 +31,14 @@ public class UserController {
 
     // 사용자 정보 조회
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         UserDTO user = userService.findById(id);
         return ResponseEntity.ok(user);
     }
     
     // 사용자 정보 업데이트
     @PutMapping("/{id}/update")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable String id, @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         UserDTO updatedUser = userService.updateUser(id, userDTO);
         return ResponseEntity.ok(updatedUser);
     }
@@ -47,7 +46,7 @@ public class UserController {
     // 프로필 사진 업로드
     @PostMapping("/{id}/uploadProfileImage")
     public ResponseEntity<Map<String, String>> uploadProfilePicture(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
         try {
             String profileImageUrl = userService.saveProfilePicture(id, file);
@@ -58,59 +57,55 @@ public class UserController {
     }
 
     // 프로필 사진 삭제
-    @DeleteMapping("/{userId}/deleteProfileImage")
-    public ResponseEntity<String> deleteProfileImage(@PathVariable String userId) {
+    @DeleteMapping("/{id}/deleteProfileImage")
+    public ResponseEntity<String> deleteProfileImage(@PathVariable Long id) {
         try {
-            userService.deleteProfilePicture(userId);
+            userService.deleteProfilePicture(id);
             return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
-    // 아이디 찾기
-    @PostMapping("/findId")
-    public ResponseEntity<Map<String, String>> findId(
+    // 이메일 찾기
+    @PostMapping("/findEmail")
+    public ResponseEntity<Map<String, String>> findEmail(
             @RequestParam String name,
-            @RequestParam String phone,
-            @RequestParam String mail) {
-        String userId = userService.findId(name, phone, mail);
-        return ResponseEntity.ok(Map.of("userId", userId));
+            @RequestParam String tell) {
+        String email = userService.findEmail(name, tell);
+        return ResponseEntity.ok(Map.of("email", email));
     }
 
     // 비밀번호 확인
     @PostMapping("/{id}/checkPassword")
     public ResponseEntity<Map<String, String>> checkPassword(
-            @PathVariable String id, @RequestBody Map<String, String> request) {
+            @PathVariable Long id, @RequestBody Map<String, String> request) {
         String password = request.get("password");
         boolean isPasswordValid = userService.checkPassword(id, password);
         return ResponseEntity.ok(Map.of("isValid", String.valueOf(isPasswordValid)));
     }
 
-
-    @PostMapping("/{userId}/updatePassword")
-    public ResponseEntity<Void> updatePassword(@PathVariable String userId, @RequestBody Map<String, String> request) {
-        String newPassword = request.get("password");  // ✅ 프론트에서 보낸 새 비밀번호
+    @PostMapping("/{id}/updatePassword")
+    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String newPassword = request.get("password");
     
         if (newPassword == null || newPassword.length() < 8) {
-            return ResponseEntity.badRequest().build(); // 비밀번호 8자 이상 체크
+            return ResponseEntity.badRequest().build();
         }
     
-        boolean isUpdated = userService.updatePassword(userId, newPassword);
+        boolean isUpdated = userService.updatePassword(id, newPassword);
     
         if (!isUpdated) {
-            return ResponseEntity.notFound().build(); // 유저 못 찾으면 404 응답
+            return ResponseEntity.notFound().build();
         }
     
-        return ResponseEntity.ok().build(); // 성공 시 200 응답 (메시지 없음)
+        return ResponseEntity.ok().build();
     }
-    
-    
 
     // 자기소개 수정
     @PutMapping("/{id}/updateInfo")
     public ResponseEntity<Map<String, String>> updateUserInfo(
-            @PathVariable String id, @RequestBody Map<String, String> request) {
+            @PathVariable Long id, @RequestBody Map<String, String> request) {
         String newInfo = request.get("info");
         boolean isUpdated = userService.updateUserInfo(id, newInfo);
         if (isUpdated) {
@@ -121,13 +116,10 @@ public class UserController {
     }
 
     //마케팅 동의 활용 수정
-    //사용자 정보 업데이트 (마케팅 동의 포함)
     @PutMapping("/{id}/updateMarketing")
-    public ResponseEntity<Boolean> updateMarketing(@PathVariable String id, @RequestBody Map<String, Boolean> request) {
+    public ResponseEntity<Boolean> updateMarketing(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
         boolean marketingConsent = request.get("marketing");
         boolean updatedMarketing = userService.updateMarketing(id, marketingConsent);
         return ResponseEntity.ok(updatedMarketing);
     }
-    
-    
 }
