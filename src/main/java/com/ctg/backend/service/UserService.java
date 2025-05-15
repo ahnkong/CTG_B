@@ -45,8 +45,8 @@ public class UserService {
     @Autowired
     private DomainRepository domainRepository;
 
-    private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성
@@ -126,6 +126,7 @@ public class UserService {
         user.setAgreeToTerms(signUpRequest.getAgreeToTerms());
         user.setAgreeToMarketing(signUpRequest.getAgreeToMarketing());
         user.setDomain(domain); // Domain 설정 (null 가능)
+        user.setCreatedAt(LocalDateTime.now());
 
         // 저장
         User savedUser = userRepository.save(user);

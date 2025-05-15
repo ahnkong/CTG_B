@@ -21,7 +21,7 @@ public class BoardDTO {
     private Integer view;
     private BoardType type;
     private Long commentId;
-    private String status; // 상태: DRAFT or PUBLISHED
+    private String status; // 상태: DRAFT or PUBLISHED - 임시저장
     private LocalDateTime lastSavedAt; // 마지막 임시 저장 시간
     private List<CommentDTO> comments; // 댓글 포함
     private List<ImageDTO> images; // 이미지 포함
