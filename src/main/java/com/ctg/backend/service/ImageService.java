@@ -117,15 +117,13 @@ public class ImageService {
                 throw new IllegalArgumentException("지원하지 않는 게시판 타입입니다: " + boardType);
         }
         
-        // 실제 파일 삭제
+        // isActive를 false로 변경
         for (Image image : images) {
-            File file = new File(uploadDir + "/" + image.getFileName());
-            if (file.exists()) {
-                file.delete();
-            }
+            image.setActive(false);
+            image.setUpdatedAt(LocalDateTime.now());
         }
         
-        imageRepository.deleteAll(images);
+        imageRepository.saveAll(images);
     }
 
     private ImageDTO convertToDTO(Image image) {

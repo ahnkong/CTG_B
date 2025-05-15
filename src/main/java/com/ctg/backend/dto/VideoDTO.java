@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class VideoDTO {
     private Long boardId;
     private Long userId;
+    private Long domainId;
     private String title;
     private String videoUrl;
     private String peacher;
@@ -34,6 +35,7 @@ public class VideoDTO {
     public VideoDTO(Video video) {
         this.boardId = video.getBoardId();
         this.userId = video.getUser().getUserId();
+        this.domainId = video.getDomain().getDomainId();
         this.title = video.getTitle();
         this.videoUrl = video.getVideoUrl();
         this.peacher = video.getPeacher();
@@ -57,6 +59,12 @@ public class VideoDTO {
     }
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public Long getDomainId() {
+        return domainId;
+    }
+    public void setDomainId(Long domainId) {
+        this.domainId = domainId;
     }
     public String getTitle() {
         return title;

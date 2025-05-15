@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class NoticeDTO {
     private Long boardId;
     private Long userId;
+    private Long domainId;
     private String title;
     private String content;
     private NoticeType noticeType;
@@ -31,6 +32,7 @@ public class NoticeDTO {
     public NoticeDTO(Notice notice) {
         this.boardId = notice.getBoardId();
         this.userId = notice.getUser().getUserId();
+        this.domainId = notice.getDomain().getDomainId();
         this.title = notice.getTitle();
         this.content = notice.getContent();
         this.noticeType = notice.getNoticeType();
@@ -51,6 +53,12 @@ public class NoticeDTO {
     }
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public Long getDomainId() {
+        return domainId;
+    }
+    public void setDomainId(Long domainId) {
+        this.domainId = domainId;
     }
     public String getTitle() {
         return title;

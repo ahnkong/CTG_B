@@ -58,40 +58,4 @@ public class UserUpdate {
         }
     }
 
-    // 권한 체크 메서드들
-    public boolean canManageAllChurches() {
-        return role.canManageAllChurches();
-    }
-
-    public boolean canManageChurch() {
-        return role.canManageChurch();
-    }
-
-    public boolean canManageNotice() {
-        return role.canManageNotice();
-    }
-
-    public boolean canManageWorship() {
-        return role.canManageWorship();
-    }
-
-    public boolean canManageNewsletter() {
-        return role.canManageNewsletter();
-    }
-
-    public boolean canManageCommunity() {
-        return role.canManageCommunity();
-    }
-
-    public boolean canApproveMembers() {
-        return role.canApproveMembers();
-    }
-
-    public boolean canBlockMembers() {
-        return role.canBlockMembers();
-    }
-
-    public boolean canBlockPosts() {
-        return role.canBlockPosts();
-    }
 }
