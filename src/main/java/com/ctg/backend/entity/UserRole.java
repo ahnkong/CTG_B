@@ -5,10 +5,10 @@ public enum UserRole {
     SUPER_ADMIN("최고 관리자"),
 
     // 교회 관리자 (목사진, 전도사)
-    CHURCH_ADMIN("교회 관리자"),
+    // CHURCH_ADMIN("교회 관리자"),
 
     // 교회 매니저 (장로, 권사)
-    CHURCH_MANAGER("교회 매니저"),
+    // CHURCH_MANAGER("교회 매니저"),
 
     // 목사진
     SENIOR_PASTOR("담임목사"),
@@ -36,40 +36,49 @@ public enum UserRole {
         return description;
     }
 
-    // 권한 체크 메서드들
-    public boolean canManageAllChurches() {
-        return this == SUPER_ADMIN;
+
+    public boolean canCrudVideoBoard() {
+        // SUPER_ADMIN, 목사진만 CRUD 가능
+        return this == SUPER_ADMIN ||
+               this == SENIOR_PASTOR ||
+               this == ASSISTANT_PASTOR ||
+               this == PROBATION_PASTOR ||
+               this == JUNIOR_PASTOR;
     }
 
-    public boolean canManageChurch() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
+    public boolean canReadOrLikeVideoBoard() {
+        // 모든 사용자 가능
+        return true;
     }
 
-    public boolean canManageNotice() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN || this == CHURCH_MANAGER;
+    public boolean canCrudNoticeBoard() {
+        // SUPER_ADMIN, 목사진, 장로, 권사만 CRUD 가능
+        return this == SUPER_ADMIN ||
+               this == SENIOR_PASTOR ||
+               this == ASSISTANT_PASTOR ||
+               this == PROBATION_PASTOR ||
+               this == JUNIOR_PASTOR ||
+               this == ELDER_MALE ||
+               this == ELDER_FEMALE ;
     }
 
-    public boolean canManageWorship() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
+    public boolean canReadOrLikeNoticeBoard() {
+        // 모든 사용자 가능
+        return true;
     }
 
-    public boolean canManageNewsletter() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
+    public boolean canCrudNewsletterBoard() {
+        // SUPER_ADMIN, 목사진만 CRUD 가능
+        return this == SUPER_ADMIN ||
+               this == SENIOR_PASTOR ||
+               this == ASSISTANT_PASTOR ||
+               this == PROBATION_PASTOR ||
+               this == JUNIOR_PASTOR;
     }
 
-    public boolean canManageCommunity() {
-        return true; // 모든 사용자가 커뮤니티 게시판 사용 가능
+    public boolean canReadOrLikeNewsletterBoard() {
+        // 모든 사용자 가능
+        return true;
     }
 
-    public boolean canApproveMembers() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
-    }
-
-    public boolean canBlockMembers() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
-    }
-
-    public boolean canBlockPosts() {
-        return this == SUPER_ADMIN || this == CHURCH_ADMIN;
-    }
 } 
