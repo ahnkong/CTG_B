@@ -22,10 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 핸드폰 번호 중복 확인
     boolean existsByTell(String tell);
 
-    // 이메일 찾기
+    // 이메일 찾기 --> 이름, 핸드폰 번호
     Optional<User> findByNameAndTell(String name, String tell);
 
-    // 비밀번호 변경을 위한 사용자 검증
+    // 비밀번호 변경을 위한 사용자 검증 --> 이름, 이메일
     Optional<User> findByNameAndEmail(String name, String email);
 
     @Transactional

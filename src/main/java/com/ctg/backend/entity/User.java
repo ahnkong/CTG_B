@@ -24,7 +24,7 @@ import com.ctg.backend.entity.Role;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-    @Id
+    @Id //기본키(숫자) -> 자동증가
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -40,6 +40,7 @@ public class User {
 
     @Column
     private Date birth;
+    // private LocalDate birth;
 
     @Column
     private String nickname;

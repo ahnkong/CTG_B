@@ -60,7 +60,8 @@ public class AuthController {
                 return ResponseEntity.ok(Map.of(
                         "token", token,
                         "email", user.getEmail(),
-                        "nickname", user.getNickname()
+                        "nickname", user.getNickname(),
+                        "userId", user.getUserId()
                 ));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -83,7 +84,11 @@ public class AuthController {
         }
 
         String email = userService.getEmailFromToken(token);
-        return ResponseEntity.ok(Map.of("email", email));
+        UserDTO user = userService.findByEmail(email);
+        return ResponseEntity.ok(Map.of(
+            "email", email,
+            "userId", user.getUserId()
+        ));
     }
 
     // 비밀번호 재설정
