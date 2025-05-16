@@ -25,7 +25,7 @@ import com.ctg.backend.service.UserService;
 @RequestMapping("/api/v1/user")
 @CrossOrigin(origins = { "http://localhost:3000", "http://192.168.0.7:3000" })
 public class UserController {
-    
+
     @Autowired
     private UserService userService;
 
@@ -35,7 +35,7 @@ public class UserController {
         UserDTO user = userService.findById(id);
         return ResponseEntity.ok(user);
     }
-    
+
     // 사용자 정보 업데이트
     @PutMapping("/{id}/update")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
@@ -88,17 +88,17 @@ public class UserController {
     @PostMapping("/{id}/updatePassword")
     public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody Map<String, String> request) {
         String newPassword = request.get("password");
-    
+
         if (newPassword == null || newPassword.length() < 8) {
             return ResponseEntity.badRequest().build();
         }
-    
+
         boolean isUpdated = userService.updatePassword(id, newPassword);
-    
+
         if (!isUpdated) {
             return ResponseEntity.notFound().build();
         }
-    
+
         return ResponseEntity.ok().build();
     }
 
@@ -115,7 +115,7 @@ public class UserController {
         }
     }
 
-    //마케팅 동의 활용 수정
+    // 마케팅 동의 활용 수정
     @PutMapping("/{id}/updateMarketing")
     public ResponseEntity<Boolean> updateMarketing(@PathVariable Long id, @RequestBody Map<String, Boolean> request) {
         boolean marketingConsent = request.get("marketing");

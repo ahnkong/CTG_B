@@ -45,8 +45,8 @@ public class UserService {
     @Autowired
     private DomainRepository domainRepository;
 
-    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성
@@ -166,11 +166,11 @@ public class UserService {
     @Transactional
     public boolean updatePasswordByEmail(String email, String newPassword) {
         Optional<User> userOptional = userRepository.findByEmail(email);
-        
+
         if (userOptional.isEmpty()) {
             return false;
         }
-    
+
         User user = userOptional.get();
         user.setPassword(newPassword);
         userRepository.save(user);
@@ -186,7 +186,7 @@ public class UserService {
     // 이메일로 사용자 찾기
     public UserDTO findByEmail(String email) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return mapToDTO(user);
     }
 
@@ -275,13 +275,13 @@ public class UserService {
         dto.setAgreeToTerms(user.getAgreeToTerms());
         dto.setAgreeToMarketing(user.getAgreeToMarketing());
         dto.setUpdatedAt(user.getUpdatedAt());
-        
+
         // Domain 정보 설정
         if (user.getDomain() != null) {
             dto.setDomainId(user.getDomain().getDomainId());
             dto.setDomainName(user.getDomain().getDomainName());
         }
-        
+
         return dto;
     }
 
@@ -327,11 +327,11 @@ public class UserService {
     @Transactional
     public boolean updatePassword(Long userId, String newPassword) {
         Optional<User> userOptional = userRepository.findById(userId);
-        
+
         if (userOptional.isEmpty()) {
             return false;
         }
-    
+
         User user = userOptional.get();
         user.setPassword(newPassword);
         userRepository.save(user);

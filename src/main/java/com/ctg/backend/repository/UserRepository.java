@@ -38,7 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.info = :info WHERE u.userId = :userId")
     void updateUserInfo(@Param("userId") Long userId, @Param("info") String info);
 
-    //마케팅 동의 여부 변경
+    // 마케팅 동의 여부 변경
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.agreeToMarketing = :agreeToMarketing WHERE u.userId = :userId")
