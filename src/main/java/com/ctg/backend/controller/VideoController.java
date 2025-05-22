@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ctg.backend.dto.VideoDTO;
 import com.ctg.backend.service.VideoService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/videos")
 public class VideoController {
@@ -59,22 +61,19 @@ public class VideoController {
 
     // 게시글 목록 조회 (검색, 필터링, 정렬)
     @GetMapping
-    public ResponseEntity<Page<VideoDTO>> getVideos(
+    public ResponseEntity<List<VideoDTO>> getVideos(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) Long domainId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "videoDate"));
-        return ResponseEntity.ok(videoService.getVideos(search, sort, domainId, pageable));
+            @RequestParam(required = false) Long userId
+    ) {
+        return ResponseEntity.ok(videoService.getVideos(search, sort, domainId, userId));
     }
 
     // 내가 작성한 게시글 조회
     @GetMapping("/my")
-    public ResponseEntity<Page<VideoDTO>> getMyVideos(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(videoService.getMyVideos(userId, page, size));
+    public ResponseEntity<List<VideoDTO>> getMyVideos(
+            @RequestParam Long userId) {
+        return ResponseEntity.ok(videoService.getMyVideos(userId));
     }
 } 

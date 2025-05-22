@@ -23,12 +23,12 @@ public class DomainDTO {
     private String logoUrl;
     private String homepageUrl;
     private String description;
-
+    private String youtubeUrl;
     @Builder
     public void DomainResponseDTO(Long domainId, String domainName, String location, String masterName,
                              String contactNumber, String email, LocalDateTime createdAt, LocalDateTime updatedAt,
                              Boolean isActive, String upperGroup, String lowerGroup,
-                             String logoUrl, String homepageUrl, String description) {
+                             String logoUrl, String homepageUrl, String description, String youtubeUrl) {
         this.domainId = domainId;
         this.domainName = domainName;
         this.location = location;
@@ -43,5 +43,6 @@ public class DomainDTO {
         this.logoUrl = logoUrl;
         this.homepageUrl = homepageUrl;
         this.description = description;
+        this.youtubeUrl = youtubeUrl;
     }
 }

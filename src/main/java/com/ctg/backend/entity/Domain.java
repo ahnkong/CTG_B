@@ -61,6 +61,9 @@ public class Domain {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "youtube_url")
+    private String youtubeUrl;
+
     @OneToMany(mappedBy = "domain")
     private List<User> users;
 }

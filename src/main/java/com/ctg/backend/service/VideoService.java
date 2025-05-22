@@ -3,6 +3,7 @@ package com.ctg.backend.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import com.ctg.backend.repository.VideoRepository;
 import com.ctg.backend.repository.UserRepository;
 import com.ctg.backend.repository.DomainRepository;
 import com.ctg.backend.repository.UserUpdateRepository;
+import com.ctg.backend.repository.LikeRepository;
 
 @Service
 public class VideoService {
@@ -35,6 +37,9 @@ public class VideoService {
 
     @Autowired
     private UserUpdateRepository userUpdateRepository;
+
+    @Autowired
+    private LikeRepository likeRepository;
 
     @Autowired
     private LikeService likeService;
@@ -135,28 +140,35 @@ public class VideoService {
 
     // 검색 및 정렬된 게시글 조회
     @Transactional(readOnly = true)
-    public Page<VideoDTO> getVideos(String search, String sort, Long domainId, Pageable pageable) {
-        Page<Video> videos;
+    public List<VideoDTO> getVideos(String search, String sort, Long domainId, Long userId) {
+        List<Video> videos;
         if (search != null && !search.isEmpty()) {
-            videos = videoRepository.searchByTitleOrSubTitle(search, ContentStatus.ACTIVE, pageable);
+            videos = videoRepository.searchByTitleOrSubTitle(search, ContentStatus.ACTIVE);
         } else if (domainId != null) {
-            videos = videoRepository.findByDomain_DomainIdAndContentStatusOrderByVideoDateDesc(domainId, ContentStatus.ACTIVE, pageable);
+            videos = videoRepository.findByDomain_DomainIdAndContentStatusOrderByVideoDateDesc(domainId, ContentStatus.ACTIVE);
         } else if ("view".equals(sort)) {
-            videos = videoRepository.findAllOrderByViewDesc(ContentStatus.ACTIVE, pageable);
+            videos = videoRepository.findAllOrderByViewDesc(ContentStatus.ACTIVE);
         } else if ("likes".equals(sort)) {
-            videos = videoRepository.findAllOrderByLikesDesc(ContentStatus.ACTIVE, pageable);
+            videos = videoRepository.findAllOrderByLikesDesc(ContentStatus.ACTIVE);
         } else {
-            // 기본적으로 videoDate 기준 내림차순 정렬
-            videos = videoRepository.findByContentStatusOrderByVideoDateDesc(ContentStatus.ACTIVE, pageable);
+            videos = videoRepository.findByContentStatusOrderByVideoDateDesc(ContentStatus.ACTIVE);
         }
-        return videos.map(VideoDTO::new);
+        return videos.stream().map(video -> {
+            VideoDTO dto = new VideoDTO(video);
+            boolean isLiked = false;
+            if (userId != null) {
+                isLiked = likeRepository.findByUser_UserIdAndLikeTypeAndTargetId(userId, LikeType.VIDEO, video.getBoardId()).isPresent();
+            }
+            dto.setLiked(isLiked);
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     // 내가 작성한 게시글 조회
     @Transactional(readOnly = true)
-    public Page<VideoDTO> getMyVideos(Long userId, int page, int size) {
-        Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<Video> videos = videoRepository.findByUser_UserIdAndContentStatusOrderByVideoDateDesc(userId, ContentStatus.ACTIVE, pageable);
-        return videos.map(VideoDTO::new);
+    public List<VideoDTO> getMyVideos(Long userId) {
+        List<Video> videos = videoRepository.findByUser_UserIdAndContentStatusOrderByVideoDateDesc(userId,
+                ContentStatus.ACTIVE);
+        return videos.stream().map(VideoDTO::new).collect(Collectors.toList());
     }
 } 

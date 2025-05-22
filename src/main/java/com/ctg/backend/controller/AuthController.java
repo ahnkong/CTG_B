@@ -62,7 +62,7 @@ public class AuthController {
                         "email", user.getEmail(),
                         "nickname", user.getNickname(),
                         "userId", user.getUserId(),
-                        "domainId", user.getDomainId()
+                        "domainId", user.getDomainId(
                 ));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

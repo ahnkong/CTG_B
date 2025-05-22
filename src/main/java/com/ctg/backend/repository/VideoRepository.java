@@ -17,26 +17,26 @@ import com.ctg.backend.entity.ContentStatus;
 public interface VideoRepository extends JpaRepository<Video, Long> {
     
     // ACTIVE 상태의 게시글만 조회 (videoDate 기준 내림차순)
-    Page<Video> findByContentStatusOrderByVideoDateDesc(ContentStatus status, Pageable pageable);
+    List<Video> findByContentStatusOrderByVideoDateDesc(ContentStatus status);
     
     // 특정 사용자의 ACTIVE 상태 게시글 조회 (videoDate 기준 내림차순)
-    Page<Video> findByUser_UserIdAndContentStatusOrderByVideoDateDesc(Long userId, ContentStatus status, Pageable pageable);
+    List<Video> findByUser_UserIdAndContentStatusOrderByVideoDateDesc(Long userId, ContentStatus status);
     
     // 특정 도메인의 ACTIVE 상태 게시글 조회 (videoDate 기준 내림차순)
-    Page<Video> findByDomain_DomainIdAndContentStatusOrderByVideoDateDesc(Long domainId, ContentStatus status, Pageable pageable);
+    List<Video> findByDomain_DomainIdAndContentStatusOrderByVideoDateDesc(Long domainId, ContentStatus status);
     
     // 제목 또는 내용으로 검색 (ACTIVE 상태만, videoDate 기준 내림차순)
     @Query("SELECT v FROM Video v WHERE v.contentStatus = :status AND (v.title LIKE %:search% OR v.subTitle LIKE %:search%) ORDER BY v.videoDate DESC")
-    Page<Video> searchByTitleOrSubTitle(@Param("search") String search, @Param("status") ContentStatus status, Pageable pageable);
+    List<Video> searchByTitleOrSubTitle(@Param("search") String search, @Param("status") ContentStatus status);
     
     // 설교자로 검색 (ACTIVE 상태만, videoDate 기준 내림차순)
-    Page<Video> findByPeacherAndContentStatusOrderByVideoDateDesc(String peacher, ContentStatus status, Pageable pageable);
+    List<Video> findByPeacherAndContentStatusOrderByVideoDateDesc(String peacher, ContentStatus status);
     
     // 조회수 기준 정렬 (ACTIVE 상태만)
     @Query("SELECT v FROM Video v WHERE v.contentStatus = :status ORDER BY v.view DESC")
-    Page<Video> findAllOrderByViewDesc(@Param("status") ContentStatus status, Pageable pageable);
+    List<Video> findAllOrderByViewDesc(@Param("status") ContentStatus status);
     
     // 좋아요 수 기준 정렬 (ACTIVE 상태만)
     @Query("SELECT v FROM Video v WHERE v.contentStatus = :status ORDER BY SIZE(v.likes) DESC")
-    Page<Video> findAllOrderByLikesDesc(@Param("status") ContentStatus status, Pageable pageable);
+    List<Video> findAllOrderByLikesDesc(@Param("status") ContentStatus status);
 } 
