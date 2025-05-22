@@ -24,8 +24,12 @@ import com.ctg.backend.dto.UserDTO;
 import com.ctg.backend.dto.SignUpRequestDTO;
 import com.ctg.backend.entity.Role;
 import com.ctg.backend.entity.User;
+import com.ctg.backend.entity.UserRole;
+import com.ctg.backend.entity.UserStatus;
+import com.ctg.backend.entity.UserUpdate;
 import com.ctg.backend.entity.Domain;
 import com.ctg.backend.repository.UserRepository;
+import com.ctg.backend.repository.UserUpdateRepository;
 import com.ctg.backend.repository.DomainRepository;
 
 import io.jsonwebtoken.Claims;
@@ -44,6 +48,9 @@ public class UserService {
 
     @Autowired
     private DomainRepository domainRepository;
+
+    @Autowired
+    private UserUpdateRepository userUpdateRepository;
 
     private final String uploadDir = "/Users/jieunseo/uploads/profile";
     // private final String uploadDir = "/Users/ahncoco/uploads/profile";
@@ -90,6 +97,7 @@ public class UserService {
     }
 
     // 사용자 저장 (회원가입)
+    @Transactional
     public UserDTO saveUser(SignUpRequestDTO signUpRequest) {
         if (existsByEmail(signUpRequest.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
@@ -130,6 +138,19 @@ public class UserService {
 
         // 저장
         User savedUser = userRepository.save(user);
+
+        // UserUpdate 테이블에 저장 (우선 하드코딩)
+        if(domain != null) {
+            UserUpdate userUpdate = new UserUpdate();
+            userUpdate.setUser(savedUser);
+            userUpdate.setDomain(domain);
+            userUpdate.setIsActive(true);
+            userUpdate.setJoinedAt(LocalDateTime.now());
+            userUpdate.setRole(UserRole.MEMBER);
+            userUpdate.setStatus(UserStatus.APPROVED);
+
+            userUpdateRepository.save(userUpdate);
+        }
         return mapToDTO(savedUser);
     }
 

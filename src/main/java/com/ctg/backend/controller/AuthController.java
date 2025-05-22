@@ -57,13 +57,15 @@ public class AuthController {
                 cookie.setMaxAge(60 * 60 * 24);
                 response.addCookie(cookie);
 
-                return ResponseEntity.ok(Map.of(
-                        "token", token,
-                        "email", user.getEmail(),
-                        "nickname", user.getNickname(),
-                        "userId", user.getUserId(),
-                        "domainId", user.getDomainId(
-                ));
+                // 응답 데이터 구성 (null 허용)
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("token", token);
+                responseData.put("email", user.getEmail());
+                responseData.put("nickname", user.getNickname());
+                responseData.put("userId", user.getUserId());
+                responseData.put("domainId", user.getDomainId());
+
+                return ResponseEntity.ok(responseData);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
             }
