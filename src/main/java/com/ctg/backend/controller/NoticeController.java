@@ -19,23 +19,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import com.ctg.backend.dto.NoticeDTO;
 import com.ctg.backend.entity.NoticeType;
 import com.ctg.backend.service.NoticeService;
 
 @RestController
-@RequestMapping("/api/notices")
+@RequestMapping("/api/v1/notices")
 public class NoticeController {
 
     @Autowired
     private NoticeService noticeService;
 
     // 게시글 생성
+    // @PostMapping
+    // public ResponseEntity<NoticeDTO> createNotice(
+    //         @RequestBody NoticeDTO noticeDTO,
+    //         @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
+    //     return ResponseEntity.ok(noticeService.createNotice(noticeDTO, images));
+    // }
+
     @PostMapping
     public ResponseEntity<NoticeDTO> createNotice(
-            @RequestBody NoticeDTO noticeDTO,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        @RequestPart("noticeDTO") NoticeDTO noticeDTO,
+        @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) throws IOException {
         return ResponseEntity.ok(noticeService.createNotice(noticeDTO, images));
     }
 

@@ -48,10 +48,15 @@ public class NoticeService {
         notice.setContentStatus(ContentStatus.ACTIVE);
         notice.setView(0);
         notice.setNoticeType(noticeDTO.getNoticeType());
+        notice.setDisplayStartDate(noticeDTO.getDisplayStartDate());
+        notice.setDisplayEndDate(noticeDTO.getDisplayEndDate());
         notice.setUser(userRepository.findById(noticeDTO.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
         notice.setDomain(domainRepository.findById(noticeDTO.getDomainId())
                 .orElseThrow(() -> new IllegalArgumentException("Domain not found")));
+
+        // 공지 상태 업데이트
+        notice.updateStatus();
 
         Notice savedNotice = noticeRepository.save(notice);
 
@@ -132,16 +137,20 @@ public class NoticeService {
         
         if (search != null && !search.isEmpty()) {
             notices = noticeRepository.searchByTitleOrContent(search, ContentStatus.ACTIVE, pageable);
+        } else if (domainId != null && noticeType != null) {
+            notices = noticeRepository.findByDomain_DomainIdAndNoticeTypeAndContentStatusOrderByCreatedAtDesc(
+                domainId, noticeType, ContentStatus.ACTIVE, pageable);
         } else if (domainId != null) {
-            notices = noticeRepository.findByDomain_DomainIdAndContentStatusOrderByCreatedAtDesc(domainId, ContentStatus.ACTIVE, pageable);
+            notices = noticeRepository.findByDomain_DomainIdAndContentStatusOrderByCreatedAtDesc(
+                domainId, ContentStatus.ACTIVE, pageable);
         } else if (noticeType != null) {
-            notices = noticeRepository.findByNoticeTypeAndContentStatusOrderByCreatedAtDesc(noticeType, ContentStatus.ACTIVE, pageable);
+            notices = noticeRepository.findByNoticeTypeAndContentStatusOrderByCreatedAtDesc(
+                noticeType, ContentStatus.ACTIVE, pageable);
         } else if ("view".equals(sort)) {
             notices = noticeRepository.findAllOrderByViewDesc(ContentStatus.ACTIVE, pageable);
         } else if ("likes".equals(sort)) {
             notices = noticeRepository.findAllOrderByLikesDesc(ContentStatus.ACTIVE, pageable);
         } else {
-            // 기본적으로 createdAt 기준 내림차순 정렬
             notices = noticeRepository.findByContentStatusOrderByCreatedAtDesc(ContentStatus.ACTIVE, pageable);
         }
         

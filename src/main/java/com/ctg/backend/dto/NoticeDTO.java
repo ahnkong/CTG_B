@@ -23,6 +23,8 @@ public class NoticeDTO {
     private Integer view;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime displayStartDate;
+    private LocalDateTime displayEndDate;
     private List<CommentDTO> comments;
     private List<ImageDTO> images;
     private String userNickname;
@@ -40,6 +42,9 @@ public class NoticeDTO {
         this.view = notice.getView();
         this.createdAt = notice.getCreatedAt();
         this.updatedAt = notice.getUpdatedAt();
+        this.displayStartDate = notice.getDisplayStartDate();
+        this.displayEndDate = notice.getDisplayEndDate();
+        this.userNickname = notice.getUser().getName();
     }
 
     public Long getBoardId() {
@@ -131,5 +136,17 @@ public class NoticeDTO {
     }
     public void setLiked(boolean isLiked) {
         this.isLiked = isLiked;
+    }
+    public LocalDateTime getDisplayStartDate() {
+        return displayStartDate;
+    }
+    public void setDisplayStartDate(LocalDateTime displayStartDate) {
+        this.displayStartDate = displayStartDate;
+    }
+    public LocalDateTime getDisplayEndDate() {
+        return displayEndDate;
+    }
+    public void setDisplayEndDate(LocalDateTime displayEndDate) {
+        this.displayEndDate = displayEndDate;
     }
 } 

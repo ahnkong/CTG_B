@@ -52,8 +52,8 @@ public class UserService {
     @Autowired
     private UserUpdateRepository userUpdateRepository;
 
-    private final String uploadDir = "/Users/jieunseo/uploads/profile";
-    // private final String uploadDir = "/Users/ahncoco/uploads/profile";
+    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    private final String uploadDir = "/Users/ahncoco/uploads/profile";
     // private final String uploadDir = "/Users/hylee/uploads/profile";
 
     // Key 객체 생성

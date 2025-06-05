@@ -70,4 +70,6 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         @Param("status") ContentStatus status,
         Pageable pageable
     );
+
+    Page<Notice> findByDomain_DomainIdAndNoticeTypeAndContentStatusOrderByCreatedAtDesc(Long domainId, NoticeType noticeType, ContentStatus contentStatus, Pageable pageable);
 } 

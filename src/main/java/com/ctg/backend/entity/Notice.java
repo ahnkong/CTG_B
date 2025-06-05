@@ -15,6 +15,12 @@ import java.util.List;
 @Setter
 public class Notice {
     
+    public enum NoticeStatus {
+        UPCOMING,   // 시작 전
+        ONGOING,    // 진행 중
+        ENDED       // 마감됨
+    }
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_id")
@@ -67,4 +73,25 @@ public class Notice {
 
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL)
     private List<Like> likes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notice_status")
+    private NoticeStatus noticeStatus = NoticeStatus.UPCOMING;
+
+    public void updateStatus() {
+        LocalDateTime now = LocalDateTime.now();
+        
+        if (displayStartDate == null || displayEndDate == null) {
+            this.noticeStatus = NoticeStatus.ONGOING;
+            return;
+        }
+        
+        if (now.isBefore(displayStartDate)) {
+            this.noticeStatus = NoticeStatus.UPCOMING;
+        } else if (now.isAfter(displayEndDate)) {
+            this.noticeStatus = NoticeStatus.ENDED;
+        } else {
+            this.noticeStatus = NoticeStatus.ONGOING;
+        }
+    }
 } 
