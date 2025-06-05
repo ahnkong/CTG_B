@@ -52,9 +52,9 @@ public class UserService {
     @Autowired
     private UserUpdateRepository userUpdateRepository;
 
-    private final String uploadDir = "/Users/jieunseo/uploads/profile";
+    // private final String uploadDir = "/Users/jieunseo/uploads/profile";
     // private final String uploadDir = "/Users/ahncoco/uploads/profile";
-    // private final String uploadDir = "/Users/hylee/uploads/profile";
+    private final String uploadDir = "/Users/heeaelee/uploads/profile";
 
     // Key 객체 생성
     private Key getSigningKey() {
@@ -371,5 +371,9 @@ public class UserService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid token");
         }
+    }
+    public User findByIdEntity(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }
