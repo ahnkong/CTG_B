@@ -81,4 +81,20 @@ public enum UserRole {
         return true;
     }
 
+    public boolean canDeleteOthersCommunityPost() {
+        return this == SUPER_ADMIN ||
+                this == SENIOR_PASTOR ||
+                this == ASSISTANT_PASTOR ||
+                this == PROBATION_PASTOR ||
+                this == JUNIOR_PASTOR;
+    }
+
+    public boolean canDeleteOthersComment() {
+        return this == SUPER_ADMIN ||
+                this == SENIOR_PASTOR ||
+                this == ASSISTANT_PASTOR ||
+                this == PROBATION_PASTOR ||
+                this == JUNIOR_PASTOR;
+    }
+
 } 

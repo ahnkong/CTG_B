@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class CommunityDTO {
     private Long boardId;
     private Long userId;
+    private Long domainId;
     private String title;
     private String content;
     private CommunityType communityType;
@@ -31,6 +32,7 @@ public class CommunityDTO {
     public CommunityDTO(Community community) {
         this.boardId = community.getBoardId();
         this.userId = community.getUser().getUserId();
+        this.domainId = community.getDomain().getDomainId();
         this.title = community.getTitle();
         this.content = community.getContent();
         this.communityType = community.getCommunityType();
@@ -51,6 +53,12 @@ public class CommunityDTO {
     }
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public Long getDomainId() {
+        return domainId;
+    }
+    public void setDomainId(Long domainId) {
+        this.domainId = domainId;
     }
     public String getTitle() {
         return title;

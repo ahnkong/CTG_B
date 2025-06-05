@@ -13,11 +13,12 @@ import com.ctg.backend.entity.Comment;
 import com.ctg.backend.entity.LikeType;
 import com.ctg.backend.entity.ReComment;
 import com.ctg.backend.entity.User;
+import com.ctg.backend.entity.UserRole;
 import com.ctg.backend.repository.CommentRepository;
 import com.ctg.backend.repository.LikeRepository;
 import com.ctg.backend.repository.ReCommentRepository;
 import com.ctg.backend.repository.UserRepository;
-
+import com.ctg.backend.repository.UserUpdateRepository;
 @Service
 public class ReCommentService {
     
@@ -33,11 +34,15 @@ public class ReCommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public ReCommentService(ReCommentRepository reCommentRepository, CommentRepository commentRepository, LikeRepository likeRepository, UserRepository userRepository) {
+    @Autowired
+    private UserUpdateRepository userUpdateRepository;
+
+    public ReCommentService(ReCommentRepository reCommentRepository, CommentRepository commentRepository, LikeRepository likeRepository, UserRepository userRepository, UserUpdateRepository userUpdateRepository) {
         this.reCommentRepository = reCommentRepository;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.userRepository = userRepository;
+        this.userUpdateRepository = userUpdateRepository;
     }
 
     // 대댓글 생성
@@ -77,12 +82,18 @@ public class ReCommentService {
     }
 
     // 대댓글 삭제 (Soft Delete)
-    public void deleteReComment(Long reCommentId, Long userId) {
+    public void deleteReComment(Long reCommentId, Long currentUserId) {
         ReComment reComment = reCommentRepository.findById(reCommentId)
                 .orElseThrow(() -> new RuntimeException("대댓글을 찾을 수 없습니다: " + reCommentId));
 
-        if (!reComment.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("본인만 대댓글을 삭제할 수 있습니다.");
+        if (!reComment.getUser().getUserId().equals(currentUserId)) {
+            UserRole role = userUpdateRepository.findByUser_UserId(currentUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("권한 정보를 찾을 수 없습니다."))
+                    .getRole();
+
+            if (!role.canDeleteOthersComment()) {
+                throw new SecurityException("타인의 대댓글을 삭제할 권한이 없습니다.");
+            }
         }
 
         reComment.setContentStatus(com.ctg.backend.entity.ContentStatus.DELETED);

@@ -3,6 +3,8 @@ package com.ctg.backend.dto;
 import java.time.LocalDateTime;
 import java.util.Date;
 import com.ctg.backend.entity.UserRole;
+import com.ctg.backend.entity.User;
+import com.ctg.backend.entity.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -162,5 +164,25 @@ public class UserDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public User toUser() {
+        User user = new User();
+        user.setUserId(this.userId);
+        user.setEmail(this.email);
+        user.setName(this.name);
+        user.setBirth(this.birth);
+        user.setNickname(this.nickname);
+        user.setTell(this.tell);
+        user.setInfo(this.info);
+        user.setLocal(this.local);
+        user.setProfileImage(this.profileImage);
+        user.setCreatedAt(this.createdAt);
+        user.setIsActive(this.isActive);
+        user.setRole(Role.USER);
+        user.setAgreeToTerms(this.agreeToTerms);
+        user.setAgreeToMarketing(this.agreeToMarketing);
+        user.setUpdatedAt(this.updatedAt);
+        return user;
     }
 }
