@@ -1,130 +1,99 @@
 package com.ctg.backend.service;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.ctg.backend.dto.CommunityDTO;
+import com.ctg.backend.entity.*;
+import com.ctg.backend.repository.CommunityRepository;
+import com.ctg.backend.repository.CommentRepository;
+import com.ctg.backend.repository.ReCommentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ctg.backend.dto.CommunityDTO;
-import com.ctg.backend.entity.Community;
-import com.ctg.backend.entity.CommunityType;
-import com.ctg.backend.entity.ContentStatus;
-import com.ctg.backend.entity.BoardType;
-import com.ctg.backend.repository.CommunityRepository;
-import com.ctg.backend.repository.UserRepository;
+import java.io.IOException;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommunityService {
+    
+    private final CommunityRepository communityRepository;
+    private final CommentRepository commentRepository;
+    private final ReCommentRepository reCommentRepository;
+    private final ImageService imageService;
+    private final UserService userService;
 
-    @Autowired
-    private CommunityRepository communityRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ImageService imageService;
-
-    // 커뮤니티 타입 유효성 검사
-    public void validateCommunityType(String type) {
-        try {
-            CommunityType.valueOf(type);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid community type: " + type);
-        }
-    }
-
-    // 게시글 생성
     @Transactional
-    public CommunityDTO createCommunity(CommunityDTO communityDTO, List<MultipartFile> images) throws IOException {
+    public Community createCommunity(CommunityDTO communityDTO, List<MultipartFile> images) throws IOException {
+        User user = userService.findByEmail(userService.getEmailFromToken(null)).toUser();
+        
         Community community = new Community();
         community.setTitle(communityDTO.getTitle());
         community.setContent(communityDTO.getContent());
         community.setCommunityType(communityDTO.getCommunityType());
         community.setContentStatus(ContentStatus.ACTIVE);
-        community.setView(0);
-        community.setUser(userRepository.findById(communityDTO.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found")));
-
+        community.setUser(user);
+        community.setDomain(user.getDomain());
+        
         Community savedCommunity = communityRepository.save(community);
-
-        // 이미지 처리
+        
         if (images != null && !images.isEmpty()) {
             imageService.saveImages(images, savedCommunity, BoardType.COMMUNITY);
         }
-
-        return new CommunityDTO(savedCommunity);
+        
+        return savedCommunity;
     }
 
-    // 게시글 수정
     @Transactional
-    public CommunityDTO updateCommunity(Long boardId, CommunityDTO communityDTO, List<MultipartFile> images) throws IOException {
+    public Community updateCommunity(Long boardId, CommunityDTO communityDTO, List<MultipartFile> newImages) throws IOException {
         Community community = communityRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("Community not found"));
-
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+        
         community.setTitle(communityDTO.getTitle());
         community.setContent(communityDTO.getContent());
         community.setCommunityType(communityDTO.getCommunityType());
-
-        // 기존 이미지 삭제
-        imageService.deleteImages(community, BoardType.COMMUNITY);
-
-        // 새 이미지 저장
-        if (images != null && !images.isEmpty()) {
-            imageService.saveImages(images, community, BoardType.COMMUNITY);
+        
+        if (newImages != null && !newImages.isEmpty()) {
+            imageService.deleteImages(community, BoardType.COMMUNITY);
+            imageService.saveImages(newImages, community, BoardType.COMMUNITY);
         }
-
-        Community updatedCommunity = communityRepository.save(community);
-        return new CommunityDTO(updatedCommunity);
+        
+        return communityRepository.save(community);
     }
 
-    // 게시글 삭제
     @Transactional
     public void deleteCommunity(Long boardId) {
         Community community = communityRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("Community not found"));
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
         
-        // 이미지 삭제
-        imageService.deleteImages(community, BoardType.COMMUNITY);
+        community.setContentStatus(ContentStatus.DELETED);
         
-        communityRepository.delete(community);
-    }
-
-    // 특정 게시글 조회
-    @Transactional(readOnly = true)
-    public CommunityDTO getCommunityById(Long boardId) {
-        Community community = communityRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("Community not found"));
-        return new CommunityDTO(community);
-    }
-
-    // 조회수 증가
-    @Transactional
-    public void incrementViews(Long boardId) {
-        Community community = communityRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("Community not found"));
-        community.setView(community.getView() + 1);
+        // 연관된 댓글들의 상태도 DELETE로 변경
+        List<Comment> comments = community.getComments();
+        comments.forEach(comment -> {
+            comment.setContentStatus(ContentStatus.DELETED);
+            comment.getReComments().forEach(reComment -> 
+                reComment.setContentStatus(ContentStatus.DELETED));
+        });
+        
         communityRepository.save(community);
     }
 
-    // 검색 및 정렬된 게시글 조회
     @Transactional(readOnly = true)
-    public Page<CommunityDTO> getCommunities(String search, Integer filterDate, String sort, String type, Pageable pageable) {
-        // TODO: 검색, 필터링, 정렬 로직 구현
-        Page<Community> communities = communityRepository.findAll(pageable);
-        return communities.map(CommunityDTO::new);
+    public Community getCommunity(Long boardId) {
+        return communityRepository.findById(boardId)
+                .filter(community -> community.getContentStatus() == ContentStatus.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
     }
 
-    // 내가 작성한 게시글 조회
     @Transactional(readOnly = true)
-    public Page<CommunityDTO> getMyCommunities(String userId, int page, int size) {
-        Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<Community> communities = communityRepository.findByUserUserId(userId, pageable);
-        return communities.map(CommunityDTO::new);
+    public List<Community> searchCommunities(String keyword) {
+        return communityRepository.searchByTitleOrContent(keyword, ContentStatus.ACTIVE);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Community> getMyPosts() {
+        User user = userService.findByEmail(userService.getEmailFromToken(null)).toUser();
+        return communityRepository.findByUserAndContentStatus(user, ContentStatus.ACTIVE);
     }
 } 

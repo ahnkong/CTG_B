@@ -16,12 +16,14 @@ import com.ctg.backend.entity.ContentStatus;
 import com.ctg.backend.entity.LikeType;
 import com.ctg.backend.entity.ReComment;
 import com.ctg.backend.entity.User;
+import com.ctg.backend.entity.UserRole;
 import com.ctg.backend.entity.BoardType;
 // import com.ctg.backend.repository.BoardRepository;
 import com.ctg.backend.repository.CommentRepository;
 import com.ctg.backend.repository.LikeRepository;
 import com.ctg.backend.repository.ReCommentRepository;
 import com.ctg.backend.repository.UserRepository;
+import com.ctg.backend.repository.UserUpdateRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,19 +46,15 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    // public CommentService(CommentRepository commentRepository, BoardRepository boardRepository, 
-    //                       LikeRepository likeRepository, ReCommentRepository reCommentRepository, UserRepository userRepository) {
-    //     this.commentRepository = commentRepository;
-    //     this.boardRepository = boardRepository;
-    //     this.likeRepository = likeRepository;
-    //     this.reCommentRepository = reCommentRepository;
-    //     this.userRepository = userRepository;
-    // }
-    public CommentService(CommentRepository commentRepository, LikeRepository likeRepository, ReCommentRepository reCommentRepository, UserRepository userRepository) {
+    @Autowired
+    private UserUpdateRepository userUpdateRepository;
+
+    public CommentService(CommentRepository commentRepository, LikeRepository likeRepository, ReCommentRepository reCommentRepository, UserRepository userRepository, UserUpdateRepository userUpdateRepository) {
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.reCommentRepository = reCommentRepository;
         this.userRepository = userRepository;
+        this.userUpdateRepository = userUpdateRepository;
     }
 
     // 댓글 생성
@@ -98,13 +96,23 @@ public class CommentService {
 
     // 댓글 삭제 (ContentStatus를 DELETED로 변경)
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, Long currentUserId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다: " + commentId));
 
         // 이미 삭제된 댓글인지 확인
         if (comment.getContentStatus() == ContentStatus.DELETED) {
             throw new IllegalArgumentException("이미 삭제된 댓글입니다.");
+        }
+
+        if (!comment.getUser().getUserId().equals(currentUserId)) {
+            UserRole role = userUpdateRepository.findByUser_UserId(currentUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("권한 정보를 찾을 수 없습니다."))
+                    .getRole();
+
+            if (!role.canDeleteOthersComment()) {
+                throw new SecurityException("타인의 댓글을 삭제할 권한이 없습니다.");
+            }
         }
 
         // ContentStatus를 DELETED로 변경

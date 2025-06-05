@@ -61,9 +61,9 @@ public class CommentController {
 
     // 댓글 삭제 (ContentStatus를 DELETED로 변경)
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<String> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<String> deleteComment(@PathVariable Long commentId, @RequestParam Long userId) {
         try {
-        commentService.deleteComment(commentId);
+        commentService.deleteComment(commentId, userId);
         return ResponseEntity.ok("댓글이 삭제되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
